@@ -1,13 +1,71 @@
-Django==5.0.1
-djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.1
-django-cors-headers==4.3.1
-psycopg2-binary==2.9.9
-python-decouple==3.8
-drf-spectacular==0.27.0
-django-filter==23.5
-celery==5.3.4
-redis==5.0.1
-pillow==10.2.0
-django-ratelimit==4.1.0
+# ================================================
+# MYPET - REQUIREMENTS (CORRIGIDO)
+# ================================================
 
+# Django Framework
+Django==4.2.11
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+django-filter==23.5
+python-decouple==3.8
+
+# Database
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
+
+# Authentication
+djangorestframework-simplejwt==5.3.1
+PyJWT==2.8.0
+
+# Cache & Celery
+redis==5.0.1
+celery==5.3.4
+django-redis==5.4.0
+django-celery-beat==2.6.0
+
+# File Handling
+Pillow==10.1.0
+python-magic==0.4.27
+
+# API Documentation
+drf-spectacular==0.27.0
+drf-nested-routers==0.94.1
+
+# Utilities
+validators==0.22.0
+
+# Date/Time
+python-dateutil==2.8.2
+
+# Email
+django-anymail[sendgrid]==10.2
+
+# Reports
+reportlab==4.0.7
+openpyxl==3.1.2
+pandas==2.1.4
+
+# QR Code
+qrcode[pil]==7.4.2
+
+# Monitoring
+sentry-sdk==1.39.2
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-cov==4.1.0
+factory-boy==3.3.0
+faker==20.1.0
+
+# Code Quality
+black==23.12.1
+flake8==6.1.0
+isort==5.13.2
+pylint==3.0.3
+mypy==1.7.1
+
+# Development
+ipython==8.18.1
+django-debug-toolbar==4.2.0
+django-extensions==3.2.3

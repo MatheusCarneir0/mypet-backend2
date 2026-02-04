@@ -44,21 +44,35 @@ venv.bak/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
-
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
+Thumbs.db
 
 # Docker
 .dockerignore
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+*.sql
+*.sql.gz
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Pytest
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 

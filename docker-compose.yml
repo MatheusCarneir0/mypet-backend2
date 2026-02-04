@@ -1,44 +1,61 @@
-version: '3.8'
+# ================================================
+# MYPET - Docker Compose (CORRIGIDO)
+# ================================================
 
 services:
+  # ======================================
+  # PostgreSQL Database
+  # ======================================
   db:
     image: postgres:15-alpine
-    container_name: mypet_db
+    container_name: mypet_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-mypet_db}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${DB_USER:-mypet_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypet_password_123}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - mypet_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mypet_user} -d ${DB_NAME:-mypet_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - mypet_network
 
+  # ======================================
+  # Redis Cache & Session Store
+  # ======================================
   redis:
     image: redis:7-alpine
     container_name: mypet_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
+    networks:
+      - mypet_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - mypet_network
 
-  backend:
-    build: .
-    container_name: mypet_backend
-    command: python manage.py runserver 0.0.0.0:8000
+  # ======================================
+  # Django Web Application
+  # ======================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mypet_web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
@@ -47,28 +64,73 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-config.settings.development}
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "manage.py", "check", "--deploy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     networks:
       - mypet_network
 
+  # ======================================
+  # Celery Worker
+  # ======================================
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mypet_celery_worker
+    restart: unless-stopped
+    command: celery -A celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mypet_network
+
+  # ======================================
+  # Celery Beat (Scheduled Tasks)
+  # ======================================
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mypet_celery_beat
+    restart: unless-stopped
+    command: celery -A celery_app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mypet_network
+
+# ======================================
+# Volumes
+# ======================================
 volumes:
   postgres_data:
-  redis_data:
+    name: mypet_postgres_data
   static_volume:
+    name: mypet_static
   media_volume:
+    name: mypet_media
 
+# ======================================
+# Networks
+# ======================================
 networks:
   mypet_network:
+    name: mypet_network
     driver: bridge
-
