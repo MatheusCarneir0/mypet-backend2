@@ -7,6 +7,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import timedelta
+
 from apps.clientes.models import Cliente
 from apps.pets.models import Pet
 from apps.servicos.models import Servico
@@ -113,6 +115,39 @@ class Agendamento(BaseModel):
             raise ValidationError({
                 'data_hora': _('Não é possível agendar para uma data/hora no passado.')
             })
+            
+        # Validar conflito de horário para o funcionário
+        if self.funcionario and self.data_hora and self.servico:
+            inicio = self.data_hora
+            fim = inicio + timedelta(minutes=self.servico.duracao_minutos)
+            
+            # Buscar agendamentos conflitantes
+            # Um conflito ocorre se (InicioA < FimB) e (FimA > InicioB)
+            # Excluindo o próprio agendamento da busca (caso seja edição)
+            conflitos = Agendamento.objects.filter(
+                funcionario=self.funcionario,
+                status__in=[self.Status.AGENDADO, self.Status.CONFIRMADO, self.Status.EM_ANDAMENTO],
+                data_hora__lt=fim  # Começa antes do meu termino
+            ).exclude(pk=self.pk) if self.pk else Agendamento.objects.filter(
+                funcionario=self.funcionario,
+                status__in=[self.Status.AGENDADO, self.Status.CONFIRMADO, self.Status.EM_ANDAMENTO],
+                data_hora__lt=fim
+            )
+            
+            # Precisamos verificar o final do agendamento existente também
+            # Mas como não temos o campo 'data_fim' persistido, precisamos calcular em cada um ou otimizar a query.
+            # Para simplificar e evitar N+1, vamos iterar sobre os candidatos (que devem ser poucos no mesmo dia/horario)
+            
+            for agendamento in conflitos:
+                fim_agendamento = agendamento.data_hora + timedelta(minutes=agendamento.servico.duracao_minutos)
+                if agendamento.data_hora < fim and fim_agendamento > inicio:
+                    raise ValidationError({
+                        'data_hora': _(
+                            f'Conflito de horário! O funcionário já possui um agendamento de '
+                            f'{agendamento.servico.tipo} das {agendamento.data_hora.strftime("%H:%M")} '
+                            f'às {fim_agendamento.strftime("%H:%M")}.'
+                        )
+                    })
         
         super().clean()
     

@@ -25,8 +25,7 @@ class Servico(BaseModel):
     tipo = models.CharField(
         _('Tipo de Serviço'),
         max_length=20,
-        choices=TipoServico.choices,
-        unique=True
+        choices=TipoServico.choices
     )
     descricao = models.TextField(_('Descrição'))
     preco = models.DecimalField(
