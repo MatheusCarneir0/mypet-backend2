@@ -7,19 +7,28 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
 from .models import Usuario
+from drf_spectacular.utils import extend_schema_field
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
     """
     Serializer base de Usuario.
+    Inclui grupos do usuário para controle de permissões.
     """
+    groups = serializers.SerializerMethodField()
+    
     class Meta:
         model = Usuario
         fields = [
             'id', 'email', 'nome', 'telefone', 'foto',
-            'tipo_usuario', 'ativo', 'data_criacao'
+            'groups', 'ativo', 'data_criacao'
         ]
-        read_only_fields = ['id', 'tipo_usuario', 'data_criacao']
+        read_only_fields = ['id', 'groups', 'data_criacao']
+    
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_groups(self, obj):
+        """Retorna lista de nomes dos grupos do usuário."""
+        return obj.get_grupos()
 
 
 class UsuarioCreateSerializer(serializers.ModelSerializer):
@@ -41,7 +50,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = [
             'email', 'nome', 'telefone', 
-            'senha', 'confirmar_senha', 'tipo_usuario'
+            'senha', 'confirmar_senha'
         ]
     
     def validate(self, attrs):
@@ -88,7 +97,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Adicionar claims customizados
         token['nome'] = user.nome
         token['email'] = user.email
-        token['tipo_usuario'] = user.tipo_usuario
+        token['groups'] = user.get_grupos()  # Lista de grupos ao invés de tipo_usuario
         
         return token
     
@@ -96,12 +105,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         
         # Adicionar dados extras à resposta
-        data['usuario'] = {
-            'id': self.user.id,
-            'email': self.user.email,
-            'nome': self.user.nome,
-            'tipo_usuario': self.user.tipo_usuario,
-        }
+        # data['usuario'] = {
+        #     'id': self.user.id,
+        #     'email': self.user.email,
+        #     'nome': self.user.nome,
+        #     'groups': self.user.get_grupos(),  # Lista de grupos ao invés de tipo_usuario
+        # }
         
         return data
 

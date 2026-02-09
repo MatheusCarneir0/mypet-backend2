@@ -6,6 +6,7 @@ Gerencia os relatórios gerenciais do sistema.
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.authentication.models import Usuario
+from apps.authentication.constants import UserGroups
 from apps.core.models import TimeStampedModel
 
 
@@ -30,7 +31,7 @@ class Relatorio(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name='relatorios',
         verbose_name=_('Administrador'),
-        limit_choices_to={'tipo_usuario': 'ADMINISTRADOR'}
+        limit_choices_to={'groups__name': UserGroups.ADMINISTRADOR}
     )
     tipo = models.CharField(
         _('Tipo'),

@@ -71,6 +71,11 @@ services:
         condition: service_healthy
     networks:
       - mypet_network
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/schema/')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ======================================
   # Celery Worker
@@ -90,6 +95,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      web:
         condition: service_healthy
     networks:
       - mypet_network
@@ -113,8 +120,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      web:
+        condition: service_healthy
     networks:
-      - mypet_network
+      - mypet_network # End of depends_on block modifications
 
 # ======================================
 # Volumes

@@ -3,6 +3,7 @@
 Serializers para o app de pets.
 """
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Pet
 from apps.clientes.models import Cliente
 
@@ -23,6 +24,7 @@ class PetSerializer(serializers.ModelSerializer):
         source='get_especie_display',
         read_only=True
     )
+    total_atendimentos = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Pet
@@ -131,6 +133,7 @@ class PetDetailSerializer(serializers.ModelSerializer):
             'total_atendimentos', 'ativo', 'data_criacao'
         ]
     
+    @extend_schema_field(dict)
     def get_cliente(self, obj):
         """
         Retornar dados resumidos do cliente.
@@ -142,6 +145,7 @@ class PetDetailSerializer(serializers.ModelSerializer):
             'telefone': obj.cliente.usuario.telefone,
         }
     
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_historico_recente(self, obj):
         """
         Retornar últimos 5 atendimentos.

@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from apps.core.models import TimeStampedModel
+from .constants import UserGroups
 
 
 class UsuarioManager(BaseUserManager):
@@ -29,28 +30,32 @@ class UsuarioManager(BaseUserManager):
     def create_superuser(self, email, senha=None, **extra_fields):
         """
         Cria e salva um superusuário.
+        Adiciona automaticamente ao grupo ADMINISTRADOR.
         """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('tipo_usuario', Usuario.TipoUsuario.ADMINISTRADOR)
         
         if extra_fields.get('is_staff') is not True:
             raise ValueError(_('Superuser deve ter is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser deve ter is_superuser=True.'))
         
-        return self.create_user(email, senha, **extra_fields)
+        user = self.create_user(email, senha, **extra_fields)
+        
+        # Adicionar ao grupo ADMINISTRADOR
+        from django.contrib.auth.models import Group
+        admin_group, _ = Group.objects.get_or_create(name='ADMINISTRADOR')
+        user.groups.add(admin_group)
+        
+        return user
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """
     Modelo de usuário customizado.
     Usa email como identificador único ao invés de username.
+    Perfis de usuário são gerenciados via Django Groups (CLIENTE, FUNCIONARIO, ADMINISTRADOR).
     """
-    class TipoUsuario(models.TextChoices):
-        CLIENTE = 'CLIENTE', _('Cliente')
-        FUNCIONARIO = 'FUNCIONARIO', _('Funcionário')
-        ADMINISTRADOR = 'ADMINISTRADOR', _('Administrador')
     
     email = models.EmailField(
         _('Email'),
@@ -72,13 +77,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         null=True,
         help_text='Foto de perfil do usuário'
     )
-    tipo_usuario = models.CharField(
-        _('Tipo de Usuário'),
-        max_length=20,
-        choices=TipoUsuario.choices,
-        default=TipoUsuario.CLIENTE
-    )
     ativo = models.BooleanField(_('Ativo'), default=True)
+    
+    @property
+    def is_active(self):
+        return self.ativo
+    
     is_staff = models.BooleanField(_('Staff'), default=False)
     
     objects = UsuarioManager()
@@ -93,7 +97,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ordering = ['-data_criacao']
         indexes = [
             models.Index(fields=['email']),
-            models.Index(fields=['tipo_usuario', 'ativo']),
+            models.Index(fields=['ativo']),
         ]
     
     def __str__(self):
@@ -107,13 +111,20 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     
     @property
     def is_cliente(self):
-        return self.tipo_usuario == self.TipoUsuario.CLIENTE
+        """Verifica se o usuário pertence ao grupo CLIENTE."""
+        return self.groups.filter(name=UserGroups.CLIENTE).exists()
     
     @property
     def is_funcionario(self):
-        return self.tipo_usuario == self.TipoUsuario.FUNCIONARIO
+        """Verifica se o usuário pertence ao grupo FUNCIONARIO."""
+        return self.groups.filter(name=UserGroups.FUNCIONARIO).exists()
     
     @property
     def is_administrador(self):
-        return self.tipo_usuario == self.TipoUsuario.ADMINISTRADOR
+        """Verifica se o usuário pertence ao grupo ADMINISTRADOR."""
+        return self.groups.filter(name=UserGroups.ADMINISTRADOR).exists()
+    
+    def get_grupos(self):
+        """Retorna lista com nomes dos grupos do usuário."""
+        return list(self.groups.values_list('name', flat=True))
 

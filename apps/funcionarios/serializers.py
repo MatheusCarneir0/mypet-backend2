@@ -4,8 +4,10 @@ Serializers para o app de funcionários.
 """
 from rest_framework import serializers
 from django.db import transaction
+from django.contrib.auth.models import Group
 from .models import Funcionario
 from apps.authentication.models import Usuario
+from apps.authentication.constants import UserGroups
 from apps.authentication.serializers import UsuarioSerializer
 
 
@@ -85,9 +87,12 @@ class FuncionarioCreateSerializer(serializers.ModelSerializer):
             'nome': validated_data.pop('nome'),
             'telefone': validated_data.pop('telefone'),
             'senha': validated_data.pop('senha'),
-            'tipo_usuario': Usuario.TipoUsuario.FUNCIONARIO
         }
         usuario = Usuario.objects.create_user(**usuario_data)
+        
+        # Adicionar ao grupo FUNCIONARIO
+        grupo_funcionario, _ = Group.objects.get_or_create(name=UserGroups.FUNCIONARIO)
+        usuario.groups.add(grupo_funcionario)
         
         # Criar funcionário
         funcionario = Funcionario.objects.create(

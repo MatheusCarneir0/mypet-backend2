@@ -41,11 +41,16 @@ class CustomTokenRefreshView(TokenRefreshView):
 @registro
 class RegistroView(generics.CreateAPIView):
     """
-    View para registro de novo usuário.
-    Endpoint público.
+    View para registro público de novos clientes.
+    Cria automaticamente: Usuario + Cliente + adiciona ao grupo CLIENTE.
+    Endpoint público - não requer autenticação.
     """
-    serializer_class = UsuarioCreateSerializer
     permission_classes = [AllowAny]
+    
+    def get_serializer_class(self):
+        """Usa ClienteCreateSerializer para cadastro completo."""
+        from apps.clientes.serializers import ClienteCreateSerializer
+        return ClienteCreateSerializer
 
 
 @google_login
@@ -75,9 +80,14 @@ class GoogleLoginView(APIView):
                 defaults={
                     'nome': nome,
                     'telefone': '',  # Pode ser preenchido depois
-                    'tipo_usuario': Usuario.TipoUsuario.CLIENTE
                 }
             )
+            
+            # Se criou novo usuário, adicionar ao grupo CLIENTE
+            if created:
+                from django.contrib.auth.models import Group
+                grupo_cliente, _ = Group.objects.get_or_create(name='CLIENTE')
+                usuario.groups.add(grupo_cliente)
             
             if not created:
                 # Atualizar nome se necessário

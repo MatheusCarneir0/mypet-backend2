@@ -7,8 +7,11 @@ from apps.agendamentos.serializers import (
     AgendamentoListSerializer,
     AgendamentoCreateSerializer,
     AgendamentoUpdateSerializer,
+    AgendamentoUpdateSerializer,
     IniciarAgendamentoSerializer,
-    ConcluirAgendamentoSerializer
+    ConcluirAgendamentoSerializer,
+    CancelarAgendamentoSerializer,
+    ReagendarAgendamentoSerializer
 )
 
 TAG = "Agendamentos"
@@ -58,12 +61,7 @@ cancelar_agendamento = extend_schema(
     tags=[TAG],
     summary="Cancelar agendamento",
     description="Cancela um agendamento existente alterando status para CANCELADO (Frame 467). Clientes podem cancelar seus próprios agendamentos.",
-    request={
-        "type": "object",
-        "properties": {
-            "motivo": {"type": "string", "description": "Motivo do cancelamento"}
-        }
-    },
+    request=CancelarAgendamentoSerializer,
     responses={
         200: envelop({"type": "object", "properties": {"message": {"type": "string"}}}),
         400: {"description": "Agendamento não pode ser cancelado"},
@@ -75,13 +73,7 @@ reagendar_agendamento = extend_schema(
     tags=[TAG],
     summary="Reagendar um agendamento",
     description="Reagenda um agendamento para uma nova data/hora.",
-    request={
-        "type": "object",
-        "properties": {
-            "data_hora": {"type": "string", "format": "date-time", "description": "Nova data e hora do agendamento"}
-        },
-        "required": ["data_hora"]
-    },
+    request=ReagendarAgendamentoSerializer,
     responses={
         200: {"description": "Agendamento reagendado com sucesso"},
         400: {"description": "Data/hora inválida ou conflito de horário"},
@@ -130,27 +122,7 @@ horarios_disponiveis = extend_schema(
     }
 )
 
-atualizar_status_agendamento = extend_schema(
-    tags=[TAG],
-    summary="Iniciar serviço",
-    description="Inicia o serviço alterando status para EM_ANDAMENTO (apenas funcionários).",
-    request={
-        "type": "object",
-        "properties": {
-            "status": {
-                "type": "string",
-                "enum": ["AGENDADO", "CONFIRMADO", "EM_ANDAMENTO", "CONCLUIDO", "CANCELADO", "NAO_COMPARECEU"],
-                "description": "Novo status do agendamento"
-            }
-        },
-        "required": ["status"]
-    },
-    responses={
-        200: envelop(AgendamentoDetailSerializer),
-        400: {"description": "Status inválido ou transição não permitida"},
-        404: {"description": "Agendamento não encontrado"}
-    }
-)
+
 
 # Schema view para aplicar todos os decorators de uma vez
 agendamento_view_schema = extend_schema_view(
@@ -161,7 +133,5 @@ agendamento_view_schema = extend_schema_view(
     reagendar=reagendar_agendamento,
     iniciar=iniciar_agendamento,
     concluir=concluir_agendamento,
-    horarios_disponiveis=horarios_disponiveis,
     disponibilidade=horarios_disponiveis,
-    status=atualizar_status_agendamento,
 )

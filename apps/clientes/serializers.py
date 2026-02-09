@@ -4,6 +4,7 @@ Serializers para o app de clientes.
 """
 from rest_framework import serializers
 from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from .models import Cliente
 from apps.authentication.models import Usuario
 from apps.authentication.serializers import UsuarioSerializer
@@ -160,6 +161,7 @@ class ClienteDetailSerializer(serializers.ModelSerializer):
             'ativo', 'data_criacao', 'data_atualizacao'
         ]
     
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_pets(self, obj):
         """
         Retornar lista resumida de pets.

@@ -8,6 +8,7 @@ from .models import Agendamento
 from apps.pets.serializers import PetListSerializer
 from apps.servicos.serializers import ServicoSerializer
 from apps.funcionarios.serializers import FuncionarioListSerializer
+from drf_spectacular.utils import extend_schema_field
 
 
 class AgendamentoSerializer(serializers.ModelSerializer):
@@ -149,6 +150,7 @@ class AgendamentoDetailSerializer(serializers.ModelSerializer):
             'observacoes', 'data_criacao', 'data_atualizacao'
         ]
     
+    @extend_schema_field(dict)
     def get_cliente(self, obj):
         return {
             'id': obj.cliente.id,
@@ -157,6 +159,7 @@ class AgendamentoDetailSerializer(serializers.ModelSerializer):
             'telefone': obj.cliente.usuario.telefone,
         }
     
+    @extend_schema_field(dict)
     def get_forma_pagamento(self, obj):
         if obj.forma_pagamento:
             return {
@@ -166,6 +169,28 @@ class AgendamentoDetailSerializer(serializers.ModelSerializer):
                 'tipo_display': obj.forma_pagamento.get_tipo_display(),
             }
         return None
+
+
+class CancelarAgendamentoSerializer(serializers.Serializer):
+    """
+    Serializer para cancelar agendamento.
+    """
+    motivo = serializers.CharField(required=True, help_text="Motivo do cancelamento")
+
+
+class ReagendarAgendamentoSerializer(serializers.Serializer):
+    """
+    Serializer para reagendar agendamento.
+    """
+    data_hora = serializers.DateTimeField(required=True, help_text="Nova data e hora")
+
+    def validate_data_hora(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError(
+                'Não é possível reagendar para uma data/hora no passado.'
+            )
+        return value
+
 
 
 class IniciarAgendamentoSerializer(serializers.Serializer):

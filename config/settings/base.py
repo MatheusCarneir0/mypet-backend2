@@ -237,20 +237,23 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
-        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+            # Add delay=True to prevent file creation until write, 
+            # which helps if directory doesn't exist yet/permissions issue
+            'delay': True, 
+        },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console'], # Default to console
         'level': 'INFO',
     },
     'loggers': {
@@ -259,8 +262,17 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
     },
 }
+
+# Debug print to verify settings loading
+print(f"Loading settings... DB_HOST={DATABASES['default']['HOST']}")
+
 
 # Spectacular Settings (API Docs)
 SPECTACULAR_SETTINGS = {
@@ -268,5 +280,11 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Sistema de Gerenciamento para Pet Shop FarmaVet',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'AgendamentoStatusEnum': 'apps.agendamentos.models.Agendamento.Status',
+        'TransacaoStatusEnum': 'apps.pagamentos.models.TransacaoPagamento.StatusPagamento',
+        'TipoServicoEnum': 'apps.servicos.models.Servico.TipoServico',
+        'TipoRelatorioEnum': 'apps.relatorios.models.Relatorio.TipoRelatorio',
+    }
 }
 
