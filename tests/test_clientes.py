@@ -31,8 +31,8 @@ class TestClienteEndpoints:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['cpf'] == cliente.cpf
     
-    def test_update_cliente(self, authenticated_client_admin, cliente):
-        """Admin pode atualizar dados de um cliente."""
+    def test_update_cliente_blocked(self, authenticated_client_admin, cliente):
+        """PUT/PATCH bloqueados - usar /me/profile/ para atualização"""
         url = reverse('cliente-detail', kwargs={'pk': cliente.pk})
         data = {
             'endereco': 'Novo Endereço, 789',
@@ -40,9 +40,13 @@ class TestClienteEndpoints:
             'estado': 'CE',
             'cep': '60000-000'
         }
+        # PUT bloqueado
+        response = authenticated_client_admin.put(url, data, format='json')
+        assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+        
+        # PATCH bloqueado
         response = authenticated_client_admin.patch(url, data, format='json')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['endereco'] == 'Novo Endereço, 789'
+        assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
     
     def test_delete_cliente(self, authenticated_client_admin, cliente):
         """Admin pode deletar cliente (soft delete)."""

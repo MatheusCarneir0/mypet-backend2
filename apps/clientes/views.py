@@ -25,6 +25,10 @@ from apps.swagger.clientes import cliente_view_schema
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Cliente.
+    IMPORTANTE: 
+    - Cadastro via /auth/register/ (não POST /clientes/)
+    - Atualização via /me/profile/ (não PUT/PATCH /clientes/{id}/)
+    - Apenas GET e DELETE permitidos aqui (admin/funcionário)
     """
     queryset = Cliente.objects.filter(ativo=True).select_related('usuario')
     permission_classes = [IsAuthenticated]
@@ -32,6 +36,8 @@ class ClienteViewSet(viewsets.ModelViewSet):
     search_fields = ['usuario__nome', 'usuario__email', 'cpf', 'cidade']
     ordering_fields = ['usuario__nome', 'data_criacao']
     ordering = ['-data_criacao']
+    # Bloquear POST, PUT e PATCH - apenas GET e DELETE permitidos
+    http_method_names = ['get', 'delete', 'head', 'options']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -83,16 +89,4 @@ class ClienteViewSet(viewsets.ModelViewSet):
         # Funcionário e Administrador vêem todos
         return queryset
     
-    @action(detail=False, methods=['get'], url_path='me')
-    def me(self, request):
-        """
-        Retorna dados do cliente autenticado.
-        """
-        try:
-            cliente = ClienteService.obter_cliente_por_usuario(request.user)
-            serializer = ClienteDetailSerializer(cliente)
-            return Response(serializer.data)
-        except Exception as e:
-            return Response({
-                'error': str(e)
-            }, status=status.HTTP_404_NOT_FOUND)
+

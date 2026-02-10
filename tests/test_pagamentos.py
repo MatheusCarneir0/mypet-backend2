@@ -20,7 +20,7 @@ class TestPagamentoEndpoints:
         assert response.status_code == status.HTTP_200_OK
     
     def test_create_transacao(self, authenticated_client_funcionario, cliente, pet, servico, forma_pagamento, funcionario):
-        """Funcionário pode criar transação de pagamento."""
+        """Funcionário pode criar transação de pagamento via processar-dinheiro."""
         from apps.agendamentos.models import Agendamento
         agendamento = Agendamento.objects.create(
             cliente=cliente,
@@ -31,12 +31,12 @@ class TestPagamentoEndpoints:
             data_hora=timezone.now() + timedelta(days=1)
         )
         
-        url = reverse('transacao-pagamento-list')
+        url = reverse('transacao-pagamento-processar-dinheiro')
         data = {
-            'agendamento': agendamento.id,
-            'forma_pagamento': forma_pagamento.id,
+            'agendamento_id': agendamento.id,
             'valor': 50.00,
-            'status': 'CONFIRMADO'
+            'valor_recebido': 50.00,
+            'observacoes': 'Pagamento em dinheiro'
         }
         response = authenticated_client_funcionario.post(url, data, format='json')
         assert response.status_code == status.HTTP_201_CREATED

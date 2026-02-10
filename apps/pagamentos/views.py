@@ -34,15 +34,19 @@ class FormaPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @transacao_pagamento_view_schema
-class TransacaoPagamentoViewSet(viewsets.ModelViewSet):
+class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet para transações de pagamento.
+    SEGURANÇA: Transações são IMUTÁVEIS - apenas leitura via GET.
+    Edição/deleção bloqueada para compliance e auditoria.
     """
     queryset = TransacaoPagamento.objects.all().select_related(
         'agendamento', 'forma_pagamento'
     )
     serializer_class = TransacaoPagamentoSerializer
     permission_classes = [IsAuthenticated]
+    # Bloquear PUT, PATCH e DELETE - apenas GET e POST (actions) permitidos
+    http_method_names = ['get', 'post', 'head', 'options']
     
     @action(detail=False, methods=['post'], url_path='processar-dinheiro')
     def processar_dinheiro(self, request):
