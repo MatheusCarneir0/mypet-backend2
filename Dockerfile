@@ -32,5 +32,8 @@ RUN mkdir -p /app/logs /app/media /app/staticfiles
 EXPOSE 8000
 
 # Comando padrão
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
 
