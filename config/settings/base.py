@@ -225,10 +225,12 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 # Cache (Redis)
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f"redis://{config('REDIS_HOST', default='localhost')}:{config('REDIS_PORT', default='6379')}/{config('REDIS_DB', default='0')}",
+        'LOCATION': REDIS_URL,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
