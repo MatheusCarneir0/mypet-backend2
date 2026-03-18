@@ -35,3 +35,27 @@ if config('SENTRY_DSN', default=None):
         traces_sample_rate=0.2,   # 20% de sample em produção (economizar cota)
         send_default_pii=False,   # LGPD: não enviar dados pessoais ao Sentry
     )
+
+import os
+
+# Redis em produção
+REDIS_URL = os.environ.get('REDIS_URL', '')
+
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+
+# Celery em produção
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', REDIS_URL)
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', REDIS_URL)
+
+# Remover debug_toolbar em produção
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app != 'debug_toolbar']
+MIDDLEWARE = [m for m in MIDDLEWARE if 'debug_toolbar' not in m]
