@@ -1,5 +1,6 @@
 # config/settings/development.py
 from .base import *
+import os
 
 DEBUG = True
 
@@ -24,3 +25,12 @@ INTERNAL_IPS = [
 # Email para console no desenvolvimento
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f"redis://{os.environ.get('REDIS_HOST', 'redis')}:{os.environ.get('REDIS_PORT', '6379')}/0",
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}

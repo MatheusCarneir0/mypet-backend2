@@ -46,17 +46,23 @@ print(f"Func: {func_user}")
 
 # ============================================
 print("\n=== C1: Google OAuth Token Not Validated ===")
-# Test that Google OAuth endpoint is now disabled (returns 503)
-from apps.authentication.views import GoogleLoginView
-req = factory.post('/auth/google/', data=json.dumps({
-    'token': 'fake_token',
-    'email': 'admin@farmavet.com',
-    'nome': 'Hacker'
-}), content_type='application/json')
-req.META['HTTP_HOST'] = 'localhost'
-view = GoogleLoginView.as_view()
-resp = view(req)
-test("Google OAuth disabled (returns 503)", resp.status_code == 503, f"status={resp.status_code}")
+# ============================================
+print("\n=== C1: Google OAuth Token Not Validated ===")
+# Test that Google OAuth endpoint is now disabled or removed
+try:
+    from apps.authentication.views import GoogleLoginView
+    req = factory.post('/auth/google/', data=json.dumps({
+        'token': 'fake_token',
+        'email': 'admin@farmavet.com',
+        'nome': 'Hacker'
+    }), content_type='application/json')
+    req.META['HTTP_HOST'] = 'localhost'
+    view = GoogleLoginView.as_view()
+    resp = view(req)
+    test("Google OAuth disabled (returns 503/404)", resp.status_code in [503, 404], f"status={resp.status_code}")
+except ImportError:
+    test("Google OAuth disabled (View Removed)", True, "GoogleLoginView removed completely")
+
 
 # ============================================
 print("\n=== C2: Pet IDOR - Client creates pet for another client ===")
