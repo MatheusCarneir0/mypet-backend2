@@ -199,20 +199,28 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-# Em desenvolvimento permite tudo; em produção usa variável de ambiente CORS_ORIGINS
+# Em desenvolvimento permite tudo; em production usa variável de ambiente CORS_ORIGINS
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    _cors_env = config('CORS_ORIGINS', default='')
+    _cors_env = os.environ.get('CORS_ORIGINS', '')
     if _cors_env:
         CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(',') if o.strip()]
     else:
+        # Padrões do front-end Vercel ou locais
         CORS_ALLOWED_ORIGINS = [
             "http://localhost:3000",
             "http://localhost:3001",
             "http://localhost:5173",
             "http://127.0.0.1:3000",
             "http://127.0.0.1:5173",
+            # Adicione aqui o domínio do Vercel se quiser chumbar no código
+            # "https://mypet-frontend-seu-usuario.vercel.app",
+        ]
+        # Permitir todos os subdomínios do Vercel (útil para previews)
+        CORS_ALLOWED_ORIGIN_REGEXES = [
+            r"^https://mypet-frontend.*\.vercel\.app$",
+            r"^https://.*mypet.*\.vercel\.app$"
         ]
 CORS_ALLOW_CREDENTIALS = True
 
