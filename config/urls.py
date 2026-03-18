@@ -7,9 +7,39 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+
+def api_root(request):
+    """View de boas-vindas da API MyPet."""
+    return JsonResponse({
+        'api': 'MyPet API',
+        'versao': '1.0.0',
+        'status': 'online',
+        'descricao': 'Sistema de Gerenciamento para Pet Shop FarmaVet',
+        'documentacao': {
+            'swagger': '/swagger/',
+            'schema':  '/api/schema/',
+        },
+        'endpoints': {
+            'autenticacao': '/auth/',
+            'perfil':       '/me/',
+            'clientes':     '/clientes/',
+            'pets':         '/pets/',
+            'agendamentos': '/agendamentos/',
+            'servicos':     '/servicos/',
+            'pagamentos':   '/pagamentos/',
+            'notificacoes': '/notificacoes/',
+            'historico':    '/historico/',
+            'funcionarios': '/funcionarios/',
+            'admin':        '/admin/',
+        },
+    })
+
 urlpatterns = [
+    # Raiz da API — retorna JSON de boas-vindas
+    path('', api_root, name='api-root'),
     # Django Admin (painel administrativo nativo)
     path('django-admin/', admin.site.urls),
     
@@ -38,6 +68,9 @@ urlpatterns = [
     
     # API Routes - Administração (Apenas Admin)
     path('admin/', include('apps.admin.urls')),  # Dashboard, Relatórios, Funcionários, Formas de Pagamento
+    
+    # API Routes - Funcionários
+    path('funcionarios/', include('apps.funcionarios.urls')),
 ]
 
 # Media files em desenvolvimento

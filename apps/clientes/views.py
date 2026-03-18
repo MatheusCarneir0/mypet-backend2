@@ -36,8 +36,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
     search_fields = ['usuario__nome', 'usuario__email', 'cpf', 'cidade']
     ordering_fields = ['usuario__nome', 'data_criacao']
     ordering = ['-data_criacao']
-    # Bloquear POST, PUT e PATCH - apenas GET e DELETE permitidos
-    http_method_names = ['get', 'delete', 'head', 'options']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -60,10 +59,12 @@ class ClienteViewSet(viewsets.ModelViewSet):
         - destroy: Apenas Admin
         """
         if self.action == 'list':
+            # IsFuncionario já inclui Administrador (ver permissions.py:28)
             from apps.core.permissions import IsFuncionario
-            return [IsFuncionario()]  # Apenas Funcionário/Admin pode listar todos (RF12)
+            return [IsFuncionario()]
         elif self.action == 'create':
-            return [AllowAny()]  # Público - qualquer um pode se cadastrar
+            from apps.core.permissions import IsFuncionario
+            return [IsFuncionario()]  # Apenas funcionário/admin pode criar cliente
         elif self.action == 'destroy':
             from apps.core.permissions import IsAdministrador
             return [IsAdministrador()]  # Apenas Admin pode deletar

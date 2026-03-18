@@ -28,6 +28,11 @@ class Agendamento(BaseModel):
         CONCLUIDO = 'CONCLUIDO', _('Concluído')
         CANCELADO = 'CANCELADO', _('Cancelado')
         NAO_COMPARECEU = 'NAO_COMPARECEU', _('Não Compareceu')
+
+    class StatusPagamento(models.TextChoices):
+        PENDENTE = 'PENDENTE', _('Pendente')
+        PAGO = 'PAGO', _('Pago')
+        FALHOU = 'FALHOU', _('Falhou')
     
     cliente = models.ForeignKey(
         Cliente,
@@ -72,6 +77,25 @@ class Agendamento(BaseModel):
         choices=Status.choices,
         default=Status.AGENDADO
     )
+    duracao_real = models.PositiveIntegerField(
+        _('Duração Real (min)'),
+        null=True,
+        blank=True,
+        help_text='Duração efetiva considerando o porte do pet. Calculada ao criar.'
+    )
+    status_pagamento = models.CharField(
+        _('Status do Pagamento'),
+        max_length=20,
+        choices=StatusPagamento.choices,
+        default=StatusPagamento.PENDENTE
+    )
+    valor_pago = models.DecimalField(
+        _('Valor Pago'),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
     observacoes = models.TextField(
         _('Observações'),
         blank=True,
@@ -104,50 +128,16 @@ class Agendamento(BaseModel):
         """
         Validações customizadas do modelo.
         """
-        # Validar que o pet pertence ao cliente
-        if self.pet and self.cliente and self.pet.cliente != self.cliente:
-            raise ValidationError({
-                'pet': _('O pet selecionado não pertence a este cliente.')
-            })
+        from apps.agendamentos.validators import AgendamentoValidator
         
-        # Validar que a data/hora é futura
-        if self.data_hora and self.data_hora < timezone.now():
-            raise ValidationError({
-                'data_hora': _('Não é possível agendar para uma data/hora no passado.')
-            })
-            
-        # Validar conflito de horário para o funcionário
-        if self.funcionario and self.data_hora and self.servico:
-            inicio = self.data_hora
-            fim = inicio + timedelta(minutes=self.servico.duracao_minutos)
-            
-            # Buscar agendamentos conflitantes
-            # Um conflito ocorre se (InicioA < FimB) e (FimA > InicioB)
-            # Excluindo o próprio agendamento da busca (caso seja edição)
-            conflitos = Agendamento.objects.filter(
-                funcionario=self.funcionario,
-                status__in=[self.Status.AGENDADO, self.Status.CONFIRMADO, self.Status.EM_ANDAMENTO],
-                data_hora__lt=fim  # Começa antes do meu termino
-            ).exclude(pk=self.pk) if self.pk else Agendamento.objects.filter(
-                funcionario=self.funcionario,
-                status__in=[self.Status.AGENDADO, self.Status.CONFIRMADO, self.Status.EM_ANDAMENTO],
-                data_hora__lt=fim
-            )
-            
-            # Precisamos verificar o final do agendamento existente também
-            # Mas como não temos o campo 'data_fim' persistido, precisamos calcular em cada um ou otimizar a query.
-            # Para simplificar e evitar N+1, vamos iterar sobre os candidatos (que devem ser poucos no mesmo dia/horario)
-            
-            for agendamento in conflitos:
-                fim_agendamento = agendamento.data_hora + timedelta(minutes=agendamento.servico.duracao_minutos)
-                if agendamento.data_hora < fim and fim_agendamento > inicio:
-                    raise ValidationError({
-                        'data_hora': _(
-                            f'Conflito de horário! O funcionário já possui um agendamento de '
-                            f'{agendamento.servico.tipo} das {agendamento.data_hora.strftime("%H:%M")} '
-                            f'às {fim_agendamento.strftime("%H:%M")}.'
-                        )
-                    })
+        valido_pet, err_pet = AgendamentoValidator.validar_pet_pertence_cliente(self.pet, self.cliente)
+        if not valido_pet:
+            raise ValidationError({'pet': _(err_pet)})
+        
+        # As demais validações complexas (tempo futuro, conflito na agenda, expediente)
+        # agora residem na camada de Services via Validators para manter as regras de négocio em um só lugar
+        # e evitar loops infinitos ao salvar em lotes e conflitos isolados.
+        pass
         
         super().clean()
     
@@ -168,5 +158,13 @@ class Agendamento(BaseModel):
     @property
     def pode_concluir(self):
         """Verifica se o agendamento pode ser concluído."""
-        return self.status == self.Status.EM_ANDAMENTO
+        return self.status in [self.Status.EM_ANDAMENTO, self.Status.AGENDADO, self.Status.CONFIRMADO]
+        
+    @property
+    def data_hora_fim(self):
+        """Retorna o horário previsto para o término do serviço."""
+        if self.data_hora and self.servico:
+            duracao = self.duracao_real or self.servico.duracao_minutos
+            return self.data_hora + timedelta(minutes=duracao)
+        return self.data_hora
 

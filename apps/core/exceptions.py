@@ -14,10 +14,17 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
     
     if response is not None:
+        data = response.data
+        if isinstance(data, dict):
+            message = data.get('detail', 'Erro na requisição')
+        elif isinstance(data, list):
+            message = data[0] if data else 'Erro na requisição'
+        else:
+            message = str(data)
         custom_response_data = {
             'error': True,
-            'message': response.data.get('detail', 'Erro na requisição'),
-            'data': response.data
+            'message': str(message),
+            'data': data
         }
         response.data = custom_response_data
     

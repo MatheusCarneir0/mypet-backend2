@@ -19,7 +19,7 @@ class ServicoSerializer(serializers.ModelSerializer):
         model = Servico
         fields = [
             'id', 'tipo', 'tipo_display', 'descricao',
-            'preco', 'duracao_minutos', 'ativo',
+            'preco', 'duracao_minutos', 'duracao_medio_grande', 'ativo',
             'data_criacao', 'data_atualizacao'
         ]
         read_only_fields = ['id', 'data_criacao', 'data_atualizacao']
@@ -37,7 +37,7 @@ class ServicoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Servico
         fields = [
-            'id', 'tipo', 'tipo_display', 'preco', 'duracao_minutos'
+            'id', 'tipo', 'tipo_display', 'descricao', 'preco', 'duracao_minutos', 'duracao_medio_grande'
         ]
 
 
@@ -48,8 +48,9 @@ class ServicoCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Servico
         fields = [
-            'tipo', 'descricao', 'preco', 'duracao_minutos'
+            'id', 'tipo', 'descricao', 'preco', 'duracao_minutos', 'duracao_medio_grande'
         ]
+        read_only_fields = ['id']
     
     def validate_preco(self, value):
         if value < 0:

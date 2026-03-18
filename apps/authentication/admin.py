@@ -20,15 +20,15 @@ class UsuarioAdmin(BaseUserAdmin):
     Admin customizado para Usuario.
     Exibe grupos ao invés de tipo_usuario.
     """
-    list_display = ['email', 'nome', get_grupos, 'ativo', 'is_staff', 'data_criacao']
-    list_filter = ['groups', 'ativo', 'is_staff', 'data_criacao']
+    list_display = ['email', 'nome', get_grupos, 'is_active', 'is_staff', 'data_criacao']
+    list_filter = ['groups', 'is_active', 'is_staff', 'data_criacao']
     search_fields = ['email', 'nome', 'telefone']
     ordering = ['-data_criacao']
     
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Informações Pessoais', {'fields': ('nome', 'telefone', 'foto')}),
-        ('Permissões', {'fields': ('ativo', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissões', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Datas Importantes', {'fields': ('last_login', 'data_criacao', 'data_atualizacao')}),
     )
     

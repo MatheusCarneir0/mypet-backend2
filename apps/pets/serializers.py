@@ -60,8 +60,8 @@ class PetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
         fields = [
-            'id', 'nome', 'nome_cliente', 'especie_display',
-            'raca', 'idade', 'porte_display', 'foto'
+            'id', 'cliente', 'nome', 'nome_cliente', 'especie_display',
+            'raca', 'idade', 'peso', 'porte_display', 'foto'
         ]
 
 
@@ -72,9 +72,13 @@ class PetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
         fields = [
-            'cliente', 'nome', 'especie', 'raca',
+            'id', 'cliente', 'nome', 'especie', 'raca',
             'idade', 'peso', 'foto', 'observacoes'
         ]
+        read_only_fields = ['id']
+        extra_kwargs = {
+            'cliente': {'required': False},
+        }
     
     def validate_cliente(self, value):
         """
@@ -85,6 +89,20 @@ class PetCreateSerializer(serializers.ModelSerializer):
                 'Cliente inativo. Não é possível cadastrar pets.'
             )
         return value
+    
+    def validate(self, data):
+        """
+        Se o usuário é cliente, ignora qualquer cliente_id enviado
+        (será forçado no perform_create da view).
+        """
+        request = self.context.get('request')
+        if request and request.user.is_cliente:
+            data.pop('cliente', None)
+        elif 'cliente' not in data:
+            raise serializers.ValidationError(
+                {'cliente': 'Este campo é obrigatório para funcionários/admin.'}
+            )
+        return data
     
     def validate_peso(self, value):
         """

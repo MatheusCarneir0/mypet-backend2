@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Notificacao
-from .serializers import NotificacaoSerializer, NotificacaoListSerializer
+from .serializers import NotificacaoSerializer, NotificacaoListSerializer, NotificacaoAdminSerializer
 from apps.swagger.notificacoes import notificacao_view_schema
 
 
@@ -24,6 +24,9 @@ class NotificacaoViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return NotificacaoListSerializer
+        user = self.request.user
+        if user.is_administrador or user.is_funcionario:
+            return NotificacaoAdminSerializer
         return NotificacaoSerializer
     
     def get_queryset(self):

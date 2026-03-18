@@ -16,19 +16,36 @@ class UsuarioSerializer(serializers.ModelSerializer):
     Inclui grupos do usuário para controle de permissões.
     """
     groups = serializers.SerializerMethodField()
-    
+    cliente_id = serializers.SerializerMethodField()
+    # #9: SerializerMethodField com type hint para resolver warning do Swagger
+    ativo = serializers.SerializerMethodField()
+
     class Meta:
         model = Usuario
         fields = [
             'id', 'email', 'nome', 'telefone', 'foto',
-            'groups', 'ativo', 'data_criacao'
+            'groups', 'cliente_id', 'ativo', 'data_criacao'
         ]
-        read_only_fields = ['id', 'groups', 'data_criacao']
-    
+        read_only_fields = ['id', 'groups', 'cliente_id', 'data_criacao']
+
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_groups(self, obj):
         """Retorna lista de nomes dos grupos do usuário."""
         return obj.get_grupos()
+
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
+    def get_cliente_id(self, obj):
+        """Retorna o ID do perfil de cliente, se existir."""
+        try:
+            return obj.cliente.id
+        except Exception:
+            return None
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_ativo(self, obj):
+        """Retorna se o usuário está ativo (usa campo is_active do DB)."""
+        return obj.is_active
+
 
 
 class UsuarioCreateSerializer(serializers.ModelSerializer):
@@ -148,18 +165,42 @@ class AlterarSenhaSerializer(serializers.Serializer):
         return attrs
 
 
-class GoogleLoginSerializer(serializers.Serializer):
-    """
-    Serializer para login com Google.
-    """
-    token = serializers.CharField(required=True, help_text='Token de acesso do Google')
-    email = serializers.EmailField(required=True)
-    nome = serializers.CharField(required=True)
-    foto_url = serializers.URLField(required=False, allow_blank=True)
-
-
 class UploadFotoSerializer(serializers.Serializer):
     """
     Serializer para upload de foto de perfil.
     """
     foto = serializers.ImageField(required=True)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """
+    Serializer para solicitar redefinição de senha via email.
+    """
+    email = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """
+    Serializer para confirmar nova senha usando uid + token.
+    """
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    senha_nova = serializers.CharField(
+        required=True,
+        style={'input_type': 'password'},
+    )
+    confirmar_senha = serializers.CharField(
+        required=True,
+        style={'input_type': 'password'},
+    )
+
+    def validate(self, attrs):
+        if attrs['senha_nova'] != attrs['confirmar_senha']:
+            raise serializers.ValidationError({
+                'confirmar_senha': 'As senhas não coincidem.'
+            })
+        try:
+            validate_password(attrs['senha_nova'])
+        except django_exceptions.ValidationError as e:
+            raise serializers.ValidationError({'senha_nova': list(e.messages)})
+        return attrs

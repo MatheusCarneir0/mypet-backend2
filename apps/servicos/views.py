@@ -10,6 +10,7 @@ from .serializers import (
     ServicoListSerializer,
     ServicoCreateUpdateSerializer
 )
+from apps.core.permissions import IsAdministrador
 from apps.swagger.servicos import servico_view_schema
 
 
@@ -17,9 +18,15 @@ from apps.swagger.servicos import servico_view_schema
 class ServicoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Serviço.
+    - list/retrieve: qualquer usuário autenticado
+    - create/update/delete: apenas administrador
     """
     queryset = Servico.objects.filter(ativo=True)
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsAdministrador()]
     
     def get_serializer_class(self):
         if self.action == 'list':

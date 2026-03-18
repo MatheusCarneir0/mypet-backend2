@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=config('DJANGO_DEBUG', default=False, cast=bool), cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
@@ -155,6 +155,17 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
+    # Rate Limiting — proteção contra brute-force e DoS
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': config('THROTTLE_ANON_RATE', default='100/hour'),
+        'user': config('THROTTLE_USER_RATE', default='1000/hour'),
+        'login': config('THROTTLE_LOGIN_RATE', default='5/minute'),
+        'register': config('THROTTLE_REGISTER_RATE', default='10/hour'),
+    }
 }
 
 # JWT Settings
@@ -175,11 +186,21 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-]
+# Em desenvolvimento permite tudo; em produção usa variável de ambiente CORS_ORIGINS
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    _cors_env = config('CORS_ORIGINS', default='')
+    if _cors_env:
+        CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(',') if o.strip()]
+    else:
+        CORS_ALLOWED_ORIGINS = [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173",
+        ]
 CORS_ALLOW_CREDENTIALS = True
 
 # Cache (Redis)
@@ -235,6 +256,10 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'auditoria': {
+            'format': '[AUDITORIA] {asctime} | {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
@@ -247,13 +272,19 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
-            # Add delay=True to prevent file creation until write, 
-            # which helps if directory doesn't exist yet/permissions issue
-            'delay': True, 
+            'delay': True,
+        },
+        # Handler exclusivo de auditoria (compliance / LGPD)
+        'file_auditoria': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'auditoria.log',
+            'formatter': 'auditoria',
+            'delay': True,
         },
     },
     'root': {
-        'handlers': ['console'], # Default to console
+        'handlers': ['console'],
         'level': 'INFO',
     },
     'loggers': {
@@ -267,8 +298,19 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+        # Logger de auditoria de ações sensíveis do sistema (agendamentos, auth, etc.)
+        'auditoria': {
+            'handlers': ['console', 'file_auditoria'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
+
+# Security Headers (base — produção adiciona HSTS)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_BROWSER_XSS_FILTER = True
 
 # Debug print to verify settings loading
 print(f"Loading settings... DB_HOST={DATABASES['default']['HOST']}")

@@ -1,8 +1,11 @@
 # apps/me/views.py
+import logging
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 from apps.authentication.models import Usuario
 from apps.authentication.serializers import (
     UsuarioSerializer,
@@ -43,9 +46,19 @@ class UploadFotoView(APIView):
         serializer = UploadFotoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        foto = serializer.validated_data["foto"]
+        
+        # Validar tipo
+        TIPOS_PERMITIDOS = ['image/jpeg', 'image/png']
+        if foto.content_type not in TIPOS_PERMITIDOS:
+            return Response(
+                {'error': 'Formato inválido. Use JPG ou PNG.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             usuario = request.user
-            usuario.foto = serializer.validated_data["foto"]
+            usuario.foto = foto
             usuario.save()
 
             return Response(
@@ -56,9 +69,11 @@ class UploadFotoView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        except Exception as e:
+        except Exception:
+            logger.exception('Erro ao fazer upload de foto')
             return Response(
-                {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Erro interno ao atualizar foto. Tente novamente."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -85,8 +100,10 @@ class AlterarSenhaView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        except Exception as e:
+        except Exception:
+            logger.exception('Erro ao alterar senha')
             return Response(
-                {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Erro interno ao alterar senha. Tente novamente."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

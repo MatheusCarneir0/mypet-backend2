@@ -17,6 +17,8 @@ class Servico(BaseModel):
         BANHO = 'BANHO', _('Banho')
         TOSA = 'TOSA', _('Tosa')
         BANHO_TOSA = 'BANHO_TOSA', _('Banho e Tosa')
+        CORTE_UNHAS = 'CORTE_UNHAS', _('Corte de Unhas')
+        BANHO_TERAPEUTICO = 'BANHO_TERAPEUTICO', _('Banho Terapêutico')
         VETERINARIO = 'VETERINARIO', _('Atendimento Veterinário')
         VACINA = 'VACINA', _('Vacinação')
         CONSULTA = 'CONSULTA', _('Consulta')
@@ -36,7 +38,13 @@ class Servico(BaseModel):
     )
     duracao_minutos = models.PositiveIntegerField(
         _('Duração em Minutos'),
-        help_text='Duração estimada do serviço'
+        help_text='Duração padrão do serviço (porte pequeno)'
+    )
+    duracao_medio_grande = models.PositiveIntegerField(
+        _('Duração Médio/Grande (min)'),
+        null=True,
+        blank=True,
+        help_text='Duração para porte médio/grande. Se vazio, usa a padrão.'
     )
     
     class Meta:

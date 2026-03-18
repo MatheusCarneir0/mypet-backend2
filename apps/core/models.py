@@ -72,3 +72,22 @@ class BaseModel(TimeStampedModel, SoftDeleteModel):
     class Meta:
         abstract = True
 
+
+class HorarioTrabalho(models.Model):
+    dia_semana = models.IntegerField(choices=[
+        (0, 'Segunda-feira'),
+        (1, 'Terça-feira'),
+        (2, 'Quarta-feira'),
+        (3, 'Quinta-feira'),
+        (4, 'Sexta-feira'),
+        (5, 'Sábado'),
+        (6, 'Domingo'),
+    ])
+    inicio_manha = models.TimeField()
+    fim_manha = models.TimeField()
+    inicio_tarde = models.TimeField(null=True, blank=True)
+    fim_tarde = models.TimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.get_dia_semana_display()}: {self.inicio_manha}-{self.fim_manha}, {self.inicio_tarde}-{self.fim_tarde}"
+

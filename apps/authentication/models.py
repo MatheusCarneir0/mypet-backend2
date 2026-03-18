@@ -67,7 +67,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     nome = models.CharField(_('Nome Completo'), max_length=150)
     telefone = models.CharField(
         _('Telefone'),
-        max_length=15,
+        max_length=20,
+        blank=True,
+        default='',
         help_text='Formato: (88) 99999-9999'
     )
     foto = models.ImageField(
@@ -77,11 +79,15 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         null=True,
         help_text='Foto de perfil do usuário'
     )
-    ativo = models.BooleanField(_('Ativo'), default=True)
+    is_active = models.BooleanField(_('Ativo'), default=True)
     
     @property
-    def is_active(self):
-        return self.ativo
+    def ativo(self):
+        return self.is_active
+    
+    @ativo.setter
+    def ativo(self, value):
+        self.is_active = value
     
     is_staff = models.BooleanField(_('Staff'), default=False)
     
@@ -97,7 +103,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ordering = ['-data_criacao']
         indexes = [
             models.Index(fields=['email']),
-            models.Index(fields=['ativo']),
+            models.Index(fields=['is_active']),
         ]
     
     def __str__(self):

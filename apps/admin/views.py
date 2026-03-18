@@ -2,10 +2,13 @@
 """
 Views administrativas para dashboard e relatórios.
 """
+import logging
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+logger = logging.getLogger(__name__)
 from apps.core.permissions import IsAdministrador
 from apps.relatorios.services import RelatorioService
 from apps.relatorios.serializers import RelatorioSerializer, RelatorioCreateSerializer
@@ -33,10 +36,11 @@ class DashboardView(APIView):
         try:
             data = RelatorioService.obter_dashboard_data()
             return Response(data, status=status.HTTP_200_OK)
-        except Exception as e:
+        except Exception:
+            logger.exception('Erro ao obter dados do dashboard')
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Erro interno ao carregar dashboard. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @gerar_relatorio
@@ -65,10 +69,11 @@ class RelatorioGerarView(APIView):
                 RelatorioSerializer(relatorio).data,
                 status=status.HTTP_201_CREATED
             )
-        except Exception as e:
+        except Exception:
+            logger.exception('Erro ao gerar relatório')
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Erro interno ao gerar relatório. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @admin_forma_pagamento_view_schema

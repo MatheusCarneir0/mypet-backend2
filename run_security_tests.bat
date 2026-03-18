@@ -1,0 +1,6 @@
+@echo off
+echo Construindo imagem atualizada com bandit e safety...
+docker compose build web
+echo Rodando testes de seguranca no container...
+docker compose run --rm web sh -c "pip install -r requirements.txt && python manage.py test tests.test_security -v 2"
+echo Fim!

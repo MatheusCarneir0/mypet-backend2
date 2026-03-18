@@ -33,6 +33,12 @@ class Cliente(BaseModel):
         ]
     )
     endereco = models.CharField(_('Endereço'), max_length=255)
+    ponto_referencia = models.CharField(
+        _('Ponto de Referência'),
+        max_length=255,
+        blank=True,
+        default=''
+    )
     cidade = models.CharField(_('Cidade'), max_length=100)
     estado = models.CharField(
         _('Estado'),

@@ -1,19 +1,17 @@
 # apps/admin/urls.py
 """
 URLs para rotas administrativas.
-Agrupa dashboard, relatórios, funcionários e formas de pagamento.
+Agrupa dashboard, relatórios e formas de pagamento.
 """
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import DashboardView, RelatorioGerarView
-from apps.funcionarios.views import FuncionarioViewSet
 from .views import AdminFormaPagamentoViewSet
 
 app_name = 'backoffice'
 
 # Router para ViewSets
 router = DefaultRouter()
-router.register('funcionarios', FuncionarioViewSet, basename='admin-funcionario')
 router.register('formas-pagamento', AdminFormaPagamentoViewSet, basename='admin-forma-pagamento')
 
 urlpatterns = [

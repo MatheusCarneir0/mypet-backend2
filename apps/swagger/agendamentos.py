@@ -130,7 +130,6 @@ agendamento_view_schema = extend_schema_view(
     retrieve=retrieve_agendamento,
     create=create_agendamento,
     cancelar=cancelar_agendamento,
-    reagendar=reagendar_agendamento,
     iniciar=iniciar_agendamento,
     concluir=concluir_agendamento,
     disponibilidade=horarios_disponiveis,

@@ -2,10 +2,13 @@
 """
 Views para gerenciamento de pagamentos.
 """
+import logging
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+logger = logging.getLogger(__name__)
 from .models import FormaPagamento, TransacaoPagamento
 from .serializers import (
     FormaPagamentoSerializer,
@@ -17,6 +20,7 @@ from .serializers import (
 )
 from .services import PagamentoService
 from apps.agendamentos.models import Agendamento
+from apps.core.permissions import IsFuncionario
 from apps.swagger.pagamentos import (
     forma_pagamento_view_schema,
     transacao_pagamento_view_schema
@@ -44,7 +48,7 @@ class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
         'agendamento', 'forma_pagamento'
     )
     serializer_class = TransacaoPagamentoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsFuncionario]
     # Bloquear PUT, PATCH e DELETE - apenas GET e POST (actions) permitidos
     http_method_names = ['get', 'post', 'head', 'options']
     
@@ -71,10 +75,15 @@ class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
                 TransacaoPagamentoSerializer(transacao).data,
                 status=status.HTTP_201_CREATED
             )
-        except Exception as e:
+        except Agendamento.DoesNotExist:
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Agendamento não encontrado.'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            logger.exception('Erro ao processar pagamento em dinheiro')
+            return Response({
+                'error': 'Erro interno ao processar pagamento. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'], url_path='processar-cartao')
     def processar_cartao(self, request):
@@ -102,10 +111,15 @@ class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
                 TransacaoPagamentoSerializer(transacao).data,
                 status=status.HTTP_201_CREATED
             )
-        except Exception as e:
+        except Agendamento.DoesNotExist:
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Agendamento não encontrado.'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            logger.exception('Erro ao processar pagamento por cartão')
+            return Response({
+                'error': 'Erro interno ao processar pagamento. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'], url_path='gerar-pix')
     def gerar_pix(self, request):
@@ -129,10 +143,15 @@ class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
                 TransacaoPagamentoSerializer(transacao).data,
                 status=status.HTTP_201_CREATED
             )
-        except Exception as e:
+        except Agendamento.DoesNotExist:
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Agendamento não encontrado.'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            logger.exception('Erro ao gerar pagamento PIX')
+            return Response({
+                'error': 'Erro interno ao processar pagamento. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'], url_path='confirmar-pix')
     def confirmar_pix(self, request):
@@ -151,7 +170,8 @@ class TransacaoPagamentoViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 TransacaoPagamentoSerializer(transacao).data
             )
-        except Exception as e:
+        except Exception:
+            logger.exception('Erro ao confirmar pagamento PIX')
             return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Erro interno ao confirmar pagamento. Tente novamente.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
