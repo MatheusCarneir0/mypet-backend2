@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+import dj_database_url
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -87,16 +88,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='mypet_db'),
-        'USER': config('DB_USER', default='mypet_user'),
-        'PASSWORD': config('DB_PASSWORD', default='mypet_password'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='mypet_db'),
+            'USER': config('DB_USER', default='mypet_user'),
+            'PASSWORD': config('DB_PASSWORD', default='mypet_password'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.Usuario'
