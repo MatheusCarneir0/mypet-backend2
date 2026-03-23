@@ -11,8 +11,8 @@ from .views import AdminFormaPagamentoViewSet
 app_name = 'backoffice'
 
 # Router para ViewSets
+
 router = DefaultRouter()
-router.register('formas-pagamento', AdminFormaPagamentoViewSet, basename='admin-forma-pagamento')
 
 urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),

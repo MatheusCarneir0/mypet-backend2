@@ -122,7 +122,7 @@ class Agendamento(BaseModel):
         ]
     
     def __str__(self):
-        return f'{self.pet.nome} - {self.servico.tipo} - {self.data_hora.strftime("%d/%m/%Y %H:%M")}'
+        return f'{self.pet.nome} - {self.servico.nome} - {self.data_hora.strftime("%d/%m/%Y %H:%M")}'
     
     def clean(self):
         """

@@ -258,6 +258,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@farmavet.com.br')
 
+# Frontend URL para links de reset de senha
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+
 # PIX Configuration
 PIX_CHAVE = config('PIX_CHAVE', default='suachave@email.com')
 PIX_MERCHANT_NAME = config('PIX_MERCHANT_NAME', default='FarmaVet Pet Shop')
@@ -348,7 +351,6 @@ SPECTACULAR_SETTINGS = {
     'ENUM_NAME_OVERRIDES': {
         'AgendamentoStatusEnum': 'apps.agendamentos.models.Agendamento.Status',
         'TransacaoStatusEnum': 'apps.pagamentos.models.TransacaoPagamento.StatusPagamento',
-        'TipoServicoEnum': 'apps.servicos.models.Servico.TipoServico',
         'TipoRelatorioEnum': 'apps.relatorios.models.Relatorio.TipoRelatorio',
     }
 }

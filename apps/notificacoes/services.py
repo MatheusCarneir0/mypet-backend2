@@ -22,7 +22,7 @@ class NotificacaoService:
         cliente = agendamento.cliente
         destinatario = cliente.usuario.email
         
-        assunto = f'Agendamento Confirmado - {agendamento.servico.get_tipo_display()}'
+        assunto = f'Agendamento Confirmado - {agendamento.servico.nome}'
         mensagem = NotificacaoService._gerar_mensagem_confirmacao(agendamento)
         
         # Criar registro de notificação
@@ -159,6 +159,42 @@ class NotificacaoService:
         return notificacao
     
     @staticmethod
+    def enviar_recuperacao_senha(usuario, reset_link):
+        """
+        Envia email com link para redefinição de senha.
+        """
+        destinatario = usuario.email
+        assunto = 'MyPet — Recuperação de Senha'
+        
+        mensagem = f"""
+        Olá, {usuario.nome}!
+        
+        Recebemos uma solicitação para redefinir a senha da sua conta no MyPet.
+        Clique no link abaixo para escolher uma nova senha:
+        
+        {reset_link}
+        
+        Este link é válido por 24 horas.
+        Se você não solicitou a alteração, pode ignorar este e-mail com segurança.
+        
+        FarmaVet Pet Shop
+        """
+        
+        # Enviar email diretamente (sem registro em Notificacao model para manter simples)
+        try:
+            send_mail(
+                subject=assunto,
+                message=mensagem,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[destinatario],
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            # Logar erro se necessário
+            return False
+
+    @staticmethod
     def _enviar_email_sincrono(notificacao):
         """
         Envia email de forma síncrona (fallback).
@@ -189,7 +225,7 @@ class NotificacaoService:
         Seu agendamento foi confirmado!
         
         Pet: {agendamento.pet.nome}
-        Serviço: {agendamento.servico.get_tipo_display()}
+        Serviço: {agendamento.servico.nome}
         Data/Hora: {agendamento.data_hora.strftime('%d/%m/%Y às %H:%M')}
         
         Aguardamos você!
@@ -204,7 +240,7 @@ class NotificacaoService:
         Lembrete: Você tem um agendamento amanhã!
         
         Pet: {agendamento.pet.nome}
-        Serviço: {agendamento.servico.get_tipo_display()}
+        Serviço: {agendamento.servico.nome}
         Data/Hora: {agendamento.data_hora.strftime('%d/%m/%Y às %H:%M')}
         
         Não esqueça!
@@ -219,7 +255,7 @@ class NotificacaoService:
         Seu agendamento foi cancelado.
         
         Pet: {agendamento.pet.nome}
-        Serviço: {agendamento.servico.get_tipo_display()}
+        Serviço: {agendamento.servico.nome}
         Data/Hora: {agendamento.data_hora.strftime('%d/%m/%Y às %H:%M')}
         
         FarmaVet Pet Shop
@@ -233,7 +269,7 @@ class NotificacaoService:
         Seu agendamento foi reagendado.
         
         Pet: {agendamento.pet.nome}
-        Serviço: {agendamento.servico.get_tipo_display()}
+        Serviço: {agendamento.servico.nome}
         Nova Data/Hora: {agendamento.data_hora.strftime('%d/%m/%Y às %H:%M')}
         
         FarmaVet Pet Shop
@@ -247,7 +283,7 @@ class NotificacaoService:
         O serviço do seu pet foi concluído com sucesso!
         
         Pet: {agendamento.pet.nome}
-        Serviço: {agendamento.servico.get_tipo_display()}
+        Serviço: {agendamento.servico.nome}
         
         Obrigado pela confiança!
         FarmaVet Pet Shop

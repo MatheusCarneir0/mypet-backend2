@@ -76,7 +76,6 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-
         try:
             usuario = Usuario.objects.get(email=email, is_active=True)
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
@@ -86,18 +85,9 @@ class PasswordResetRequestView(APIView):
             frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
             reset_link = f"{frontend_url}/redefinir-senha?uid={uid}&token={token}"
 
-            send_mail(
-                subject='MyPet — Redefinição de Senha',
-                message=(
-                    f'Olá, {usuario.nome}!\n\n'
-                    f'Clique no link abaixo para redefinir sua senha:\n{reset_link}\n\n'
-                    f'O link é válido por 24 horas.\n'
-                    f'Se você não solicitou isso, ignore este email.'
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,
-            )
+            # Enviar e-mail via service
+            from apps.notificacoes.services import NotificacaoService
+            NotificacaoService.enviar_recuperacao_senha(usuario, reset_link)
         except Usuario.DoesNotExist:
             pass  # Silencia para não vazar e-mails cadastrados
 
@@ -114,13 +104,16 @@ class PasswordResetConfirmView(APIView):
     """
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            print(f"DEBUG: Serializer inválido: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         uid = serializer.validated_data['uid']
         token = serializer.validated_data['token']
         senha_nova = serializer.validated_data['senha_nova']
+        print(f"DEBUG: Tentando confirmar reset. UID: {uid}, Token: {token}")
 
         try:
             pk = force_str(urlsafe_base64_decode(uid))

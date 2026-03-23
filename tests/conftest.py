@@ -8,7 +8,7 @@ from apps.authentication.models import Usuario
 from apps.clientes.models import Cliente
 from apps.funcionarios.models import Funcionario
 from apps.pets.models import Pet
-from apps.servicos.models import Servico
+from apps.servicos.models import Servico, ServicoCargo
 from apps.pagamentos.models import FormaPagamento
 
 
@@ -114,12 +114,14 @@ def pet(cliente):
 @pytest.fixture
 def servico():
     """Serviço de teste."""
-    return Servico.objects.create(
-        tipo='BANHO',
+    s = Servico.objects.create(
+        nome='Banho Completo',
         descricao='Banho completo para cães',
         preco=50.00,
         duracao_minutos=60
     )
+    ServicoCargo.objects.create(servico=s, cargo='ATENDENTE')
+    return s
 
 
 @pytest.fixture

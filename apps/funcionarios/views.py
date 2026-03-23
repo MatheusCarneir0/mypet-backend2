@@ -31,6 +31,10 @@ class FuncionarioViewSet(viewsets.ModelViewSet):
         return FuncionarioSerializer
 
 
+from drf_spectacular.utils import extend_schema
+
+
+@extend_schema(tags=["Funcionários"])
 class HorarioTrabalhoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Horário de Trabalho dos Funcionários.

@@ -9,7 +9,7 @@ from apps.funcionarios.serializers import (
     FuncionarioUpdateSerializer
 )
 
-TAG = "Administração"
+TAG = "Funcionários"
 
 # Listagem
 list_funcionarios = extend_schema(

@@ -100,15 +100,9 @@ class IsOwnerOrFuncionario(BasePermission):
 
 class IsCargoMatchesService(BasePermission):
     """
-    Permissão de objeto: o cargo do funcionário deve ser compatível
-    com o tipo de serviço do agendamento. Admin sempre passa.
+    Permissão de objeto: o cargo do funcionário deve estar entre os cargos
+    vinculados ao serviço do agendamento. Admin sempre passa.
     """
-    CARGO_SERVICE_MAP = {
-        'VETERINARIO': ['VETERINARIO', 'VACINA', 'CONSULTA', 'EMERGENCIA'],
-        'TOSADOR': ['TOSA', 'CORTE_UNHAS', 'BANHO_TOSA'],
-        # ATENDENTE e GERENTE podem tudo
-    }
-
     def has_object_permission(self, request, view, obj):
         if request.user.is_administrador:
             return True
@@ -117,6 +111,9 @@ class IsCargoMatchesService(BasePermission):
         cargo = request.user.funcionario.cargo
         if cargo in ('GERENTE', 'ATENDENTE'):
             return True
-        allowed = self.CARGO_SERVICE_MAP.get(cargo, [])
-        return obj.servico.tipo in allowed
+        # Verificar se o cargo está nos cargos vinculados ao serviço
+        from apps.servicos.models import ServicoCargo
+        return ServicoCargo.objects.filter(
+            servico=obj.servico, cargo=cargo
+        ).exists()
 

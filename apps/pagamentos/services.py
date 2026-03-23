@@ -248,7 +248,7 @@ class PagamentoService:
                 'pet': agendamento.pet,
                 'forma_pagamento': forma_pagamento,
                 'data_atendimento': timezone.now(),
-                'tipo_servico': agendamento.servico.get_tipo_display(),
+                'tipo_servico': agendamento.servico.nome,
                 'observacoes': agendamento.observacoes,
                 'valor_pago': valor_pago
             }

@@ -42,58 +42,65 @@ def criar_admin():
 
 
 def criar_servicos():
-    """Cria serviços padrão da FarmaVet."""
+    """Cria serviços padrão da FarmaVet com os cargos vinculados."""
+    from apps.servicos.models import ServicoCargo
+
     servicos = [
         {
-            'tipo': Servico.TipoServico.BANHO,
-            'descricao': 'Banho completo com shampoo especial. Porte pequeno ~30min, médio/grande ~50min.',
+            'nome': 'Banho',
+            'descricao': 'Banho completo com shampoo especial.',
             'preco': 50.00,
-            'duracao_minutos': 30,
-            'duracao_medio_grande': 50
+            'duracao_minutos': 40,
+            'cargos': ['ATENDENTE'],
         },
         {
-            'tipo': Servico.TipoServico.TOSA,
-            'descricao': 'Tosa higiênica ou estética',
+            'nome': 'Tosa',
+            'descricao': 'Tosa higiênica ou estética.',
             'preco': 70.00,
             'duracao_minutos': 80,
-            'duracao_medio_grande': 80
+            'cargos': ['TOSADOR'],
         },
         {
-            'tipo': Servico.TipoServico.BANHO_TOSA,
-            'descricao': 'Banho completo + tosa (requer tosador e atendente)',
+            'nome': 'Banho e Tosa',
+            'descricao': 'Banho completo + tosa.',
             'preco': 100.00,
             'duracao_minutos': 120,
-            'duracao_medio_grande': 120
+            'cargos': ['TOSADOR', 'ATENDENTE'],
         },
         {
-            'tipo': Servico.TipoServico.CORTE_UNHAS,
-            'descricao': 'Corte de unhas para pets de pequeno, médio e grande porte',
+            'nome': 'Corte de Unhas',
+            'descricao': 'Corte de unhas para pets de qualquer porte.',
             'preco': 25.00,
             'duracao_minutos': 15,
-            'duracao_medio_grande': 20
+            'cargos': ['TOSADOR'],
         },
         {
-            'tipo': Servico.TipoServico.BANHO_TERAPEUTICO,
-            'descricao': 'Banho terapêutico com produtos medicamentosos para tratamento de pele',
+            'nome': 'Banho Terapêutico',
+            'descricao': 'Banho com produtos medicamentosos para tratamento de pele.',
             'preco': 80.00,
-            'duracao_minutos': 40,
-            'duracao_medio_grande': 60
+            'duracao_minutos': 50,
+            'cargos': ['ATENDENTE'],
         },
         {
-            'tipo': Servico.TipoServico.VETERINARIO,
-            'descricao': 'Atendimento com médico veterinário (tempo variável conforme situação)',
+            'nome': 'Consulta Veterinária',
+            'descricao': 'Atendimento com médico veterinário.',
             'preco': 150.00,
             'duracao_minutos': 30,
-            'duracao_medio_grande': 30
+            'cargos': ['VETERINARIO'],
         },
     ]
-    
+
     for servico_data in servicos:
-        Servico.objects.update_or_create(
-            tipo=servico_data['tipo'],
+        cargos = servico_data.pop('cargos')
+        servico, _ = Servico.objects.update_or_create(
+            nome=servico_data['nome'],
             defaults=servico_data
         )
-    
+        # Atualizar cargos vinculados
+        ServicoCargo.objects.filter(servico=servico).delete()
+        for cargo in cargos:
+            ServicoCargo.objects.create(servico=servico, cargo=cargo)
+
     print(f'✓ {len(servicos)} serviços criados/atualizados')
 
 

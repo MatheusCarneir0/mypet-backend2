@@ -22,8 +22,7 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-# Email para console no desenvolvimento
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# O backend de email será gerenciado pelo base.py (lendo do .env)
 
 CACHES = {
     'default': {

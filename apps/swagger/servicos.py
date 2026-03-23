@@ -13,8 +13,11 @@ TAG = "Agendamentos"  # Serviços estão relacionados a agendamentos
 # Listagem
 list_servicos = extend_schema(
     tags=[TAG],
-    summary="Listar tipos de serviços",
-    description="Retorna a lista de serviços disponíveis com tipos, preços e durações (Frame 434).",
+    summary="Listar serviços",
+    description=(
+        "Retorna a lista de serviços disponíveis com nome, preço, duração e "
+        "os cargos profissionais que os realizam."
+    ),
     responses={200: envelop(ServicoListSerializer(many=True), paginated=True)}
 )
 
@@ -22,7 +25,7 @@ list_servicos = extend_schema(
 retrieve_servico = extend_schema(
     tags=[TAG],
     summary="Obter detalhes de um serviço",
-    description="Retorna os detalhes completos de um serviço específico.",
+    description="Retorna os detalhes completos de um serviço específico, incluindo os cargos vinculados.",
     responses={
         200: envelop(ServicoSerializer),
         404: {"description": "Serviço não encontrado"}
@@ -33,7 +36,11 @@ retrieve_servico = extend_schema(
 create_servico = extend_schema(
     tags=[TAG],
     summary="Criar novo serviço",
-    description="Cria um novo serviço no sistema.",
+    description=(
+        "Cria um novo serviço. É obrigatório informar `cargos`, "
+        "uma lista dos cargos profissionais que realizam o serviço. "
+        "Valores válidos para cargo: ATENDENTE, TOSADOR, VETERINARIO, GERENTE."
+    ),
     request=ServicoCreateUpdateSerializer,
     responses={
         201: envelop(ServicoSerializer),
@@ -45,7 +52,7 @@ create_servico = extend_schema(
 update_servico = extend_schema(
     tags=[TAG],
     summary="Atualizar serviço",
-    description="Atualiza os dados de um serviço existente.",
+    description="Atualiza os dados de um serviço existente, incluindo os cargos vinculados.",
     request=ServicoCreateUpdateSerializer,
     responses={
         200: envelop(ServicoSerializer),
@@ -86,4 +93,3 @@ servico_view_schema = extend_schema_view(
     partial_update=partial_update_servico,
     destroy=destroy_servico,
 )
-

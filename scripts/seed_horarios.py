@@ -41,9 +41,9 @@ def run_test():
     # Segunda-feira
     data_teste = date(2026, 3, 2) # Uma segunda-feira
     
-    servico = Servico.objects.filter(tipo=Servico.TipoServico.TOSA).first()
+    servico = Servico.objects.filter(nome='Tosa').first()
     if not servico:
-        print("Erro: Servico de tosa não encontrado.")
+        print("Erro: Servico de Tosa não encontrado.")
         return
 
     horarios_disp = AgendamentoService.horarios_disponiveis(data_teste, servico.id)

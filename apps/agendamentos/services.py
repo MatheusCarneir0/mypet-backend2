@@ -33,14 +33,8 @@ class AgendamentoService:
     @staticmethod
     def obter_duracao_servico(servico, pet=None):
         """
-        Retorna a duração do serviço considerando o porte do pet.
-        Se o pet for de porte médio/grande/gigante e o serviço tiver
-        duracao_medio_grande definida, usa essa duração.
+        Retorna a duração do serviço em minutos.
         """
-        if (pet and 
-            pet.porte in AgendamentoService.PORTES_MEDIO_GRANDE and 
-            servico.duracao_medio_grande):
-            return servico.duracao_medio_grande
         return servico.duracao_minutos
     
     @staticmethod
@@ -107,24 +101,6 @@ class AgendamentoService:
             # Se pet_id informado, verificar se o pet já tem agendamento neste horário
             if pet and AgendamentoRepository.verificar_conflito_pet(pet.id, data_hora_slot, duracao):
                 slot_livre = False
-            elif servico.tipo == Servico.TipoServico.BANHO_TOSA:
-                # BANHO_TOSA precisa de TODOS os funcionários livres (tosador + atendente)
-                todos_livres = True
-                for func in funcionarios_ativos:
-                    dentro_expediente = AgendamentoValidator.validar_horario_dentro_expediente(
-                        data_hora_slot.time(), duracao, func.expedientes_hoje
-                    )
-                    if not dentro_expediente:
-                        todos_livres = False
-                        break
-                    tem_conflito = AgendamentoRepository.verificar_conflito_horario(
-                        func.id, data_hora_slot, duracao,
-                        cache_agendamentos=agendamentos_cache
-                    )
-                    if tem_conflito:
-                        todos_livres = False
-                        break
-                slot_livre = todos_livres
             else:
                 for func in funcionarios_ativos:
                     # Validar In-Memory Expediente
@@ -177,27 +153,6 @@ class AgendamentoService:
         funcionarios_aptos = AgendamentoRepository.buscar_funcionarios_disponiveis_com_expedientes(
             servico, dia_semana_bd
         )
-        
-        if servico.tipo == Servico.TipoServico.BANHO_TOSA:
-            # Precisa de TODOS os funcionários livres (tosador + atendente)
-            todos_livres = True
-            primeiro_func = None
-            for func in funcionarios_aptos:
-                dentro_expediente = AgendamentoValidator.validar_horario_dentro_expediente(
-                    data_hora_local.time(), duracao, func.expedientes_hoje
-                )
-                if not dentro_expediente:
-                    todos_livres = False
-                    break
-                conflito = AgendamentoRepository.verificar_conflito_horario(
-                    func.id, data_hora, duracao, agendamento_ignorado_id=agendamento_ignorado_id
-                )
-                if conflito:
-                    todos_livres = False
-                    break
-                if primeiro_func is None:
-                    primeiro_func = func
-            return primeiro_func if todos_livres else None
         
         for func in funcionarios_aptos:
             dentro_expediente = AgendamentoValidator.validar_horario_dentro_expediente(
@@ -421,7 +376,7 @@ class AgendamentoService:
                     'pet': agendamento.pet,
                     'forma_pagamento': agendamento.forma_pagamento,
                     'data_atendimento': timezone.now(),
-                    'tipo_servico': agendamento.servico.tipo,
+                    'tipo_servico': agendamento.servico.nome,
                     'observacoes': observacoes,
                     'valor_pago': v_pago
                 }

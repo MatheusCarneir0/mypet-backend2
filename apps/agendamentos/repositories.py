@@ -45,37 +45,29 @@ class AgendamentoRepository:
         """
         Busca em 1 query todos os funcionários capacitados para o serviço já embutindo
         o expediente válido daquele dia da semana via Prefetch.
+        Os cargos aptos são obtidos diretamente do relacionamento ServicoCargo do serviço.
         """
-        # Filtrar capacitados por cargo de acordo com o serviço
-        funcionarios_qs = Funcionario.objects.filter(ativo=True)
-        # Veterinários cuidam de atendimentos veterinários, vacinas, consultas e emergências
-        vet_services = [Servico.TipoServico.VETERINARIO, Servico.TipoServico.VACINA, Servico.TipoServico.CONSULTA, Servico.TipoServico.EMERGENCIA]
-        # Atendente cuida de banho
-        atendente_services = [Servico.TipoServico.BANHO, Servico.TipoServico.BANHO_TERAPEUTICO]
-        # Tosador cuida de tosa e corte de unhas
-        tosador_services = [Servico.TipoServico.TOSA, Servico.TipoServico.CORTE_UNHAS]
-        # Banho e Tosa precisa de 2 funcionários (tosador + atendente)
-        dual_services = [Servico.TipoServico.BANHO_TOSA]
+        from apps.servicos.models import ServicoCargo
 
-        if servico.tipo in vet_services:
-            funcionarios_qs = funcionarios_qs.filter(cargo=Funcionario.Cargo.VETERINARIO)
-        elif servico.tipo in atendente_services:
-            funcionarios_qs = funcionarios_qs.filter(cargo=Funcionario.Cargo.ATENDENTE)
-        elif servico.tipo in tosador_services:
-            funcionarios_qs = funcionarios_qs.filter(cargo=Funcionario.Cargo.TOSADOR)
-        elif servico.tipo in dual_services:
-            funcionarios_qs = funcionarios_qs.filter(cargo__in=[Funcionario.Cargo.TOSADOR, Funcionario.Cargo.ATENDENTE])
-            
+        # Obter os cargos vinculados a este serviço
+        cargos_aptos = list(
+            ServicoCargo.objects.filter(servico=servico).values_list('cargo', flat=True)
+        )
+
+        funcionarios_qs = Funcionario.objects.filter(ativo=True)
+        if cargos_aptos:
+            funcionarios_qs = funcionarios_qs.filter(cargo__in=cargos_aptos)
+
         # Fazer prefetch APENAS dos horários do dia desejado
         expedientes_prefetch = Prefetch(
             'horarios_trabalho',
             queryset=HorarioTrabalho.objects.filter(dia_semana=dia_semana_bd),
             to_attr='expedientes_hoje'
         )
-        
+
         # Obter a lista final que tem expedientes_hoje populado em uma segunda query de in-list
         funcionarios = list(funcionarios_qs.prefetch_related(expedientes_prefetch))
-        
+
         # Manter apenas quem de fato trabalha no dia (tem item na lista expedientes_hoje)
         return [f for f in funcionarios if getattr(f, 'expedientes_hoje', [])]
 

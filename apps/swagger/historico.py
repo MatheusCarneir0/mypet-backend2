@@ -7,7 +7,7 @@ from apps.historico.serializers import (
     HistoricoAtendimentoListSerializer
 )
 
-TAG = "Pets"  # Histórico está relacionado a pets
+TAG = "Histórico"  # Histórico separado de Pets
 
 # Listagem
 list_historico = extend_schema(

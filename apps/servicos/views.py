@@ -21,13 +21,13 @@ class ServicoViewSet(viewsets.ModelViewSet):
     - list/retrieve: qualquer usuário autenticado
     - create/update/delete: apenas administrador
     """
-    queryset = Servico.objects.filter(ativo=True)
-    
+    queryset = Servico.objects.filter(ativo=True).prefetch_related('cargos')
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [IsAuthenticated()]
         return [IsAuthenticated(), IsAdministrador()]
-    
+
     def get_serializer_class(self):
         if self.action == 'list':
             return ServicoListSerializer

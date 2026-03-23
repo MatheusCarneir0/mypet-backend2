@@ -6,7 +6,7 @@ from django.utils import timezone
 from datetime import timedelta, date, time
 
 from apps.pets.models import Pet
-from apps.servicos.models import Servico
+from apps.servicos.models import Servico, ServicoCargo
 from apps.funcionarios.models import Funcionario, HorarioTrabalho
 from apps.agendamentos.models import Agendamento
 from apps.agendamentos.services import AgendamentoService
@@ -19,11 +19,12 @@ class AgendamentoServiceTests(TestCase):
     def setUp(self):
         # Setup base objects
         self.servico = Servico.objects.create(
-            tipo=Servico.TipoServico.BANHO, 
-            descricao='Banho Básico', 
-            preco=50.00, 
+            nome='Banho Básico',
+            descricao='Banho Básico',
+            preco=50.00,
             duracao_minutos=30
         )
+        ServicoCargo.objects.create(servico=self.servico, cargo='ATENDENTE')
         self.forma_pagamento = FormaPagamento.objects.create(
             nome='PIX', 
             tipo='PIX'
