@@ -3,6 +3,7 @@
 Views para autenticação.
 """
 from rest_framework import status, generics
+import logging
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
@@ -78,6 +79,7 @@ class PasswordResetRequestView(APIView):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
+        logger = logging.getLogger(__name__)
         try:
             usuario = Usuario.objects.get(email=email, is_active=True)
             uid = urlsafe_base64_encode(force_bytes(usuario.pk))
@@ -89,7 +91,10 @@ class PasswordResetRequestView(APIView):
 
             # Enviar e-mail via service
             from apps.notificacoes.services import NotificacaoService
-            NotificacaoService.enviar_recuperacao_senha(usuario, reset_link)
+            try:
+                NotificacaoService.enviar_recuperacao_senha(usuario, reset_link)
+            except Exception as e:
+                logger.error(f"ERRO ao enviar email de recuperação: {e}", exc_info=True)
         except Usuario.DoesNotExist:
             pass  # Silencia para não vazar e-mails cadastrados
 
