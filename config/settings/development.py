@@ -1,6 +1,12 @@
+
 # config/settings/development.py
 from .base import *
 import os
+
+# Storage local para desenvolvimento
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEBUG = True
 

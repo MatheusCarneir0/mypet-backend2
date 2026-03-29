@@ -38,6 +38,9 @@ if config('SENTRY_DSN', default=None):
 
 import os
 
+# Usar Cloudinary como storage de arquivos em produção
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Redis em produção
 REDIS_URL = os.environ.get('REDIS_URL', '')
 

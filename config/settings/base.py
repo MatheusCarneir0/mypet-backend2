@@ -6,11 +6,17 @@ Base settings shared across all environments.
 import os
 from pathlib import Path
 from decouple import config
+import cloudinary
+
+
 from datetime import timedelta
 import dj_database_url
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Garante que o diretório de logs existe
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -32,7 +38,10 @@ DJANGO_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # Cloudinary apps devem vir antes do staticfiles
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
 ]
 
 THIRD_PARTY_APPS = [
@@ -147,6 +156,13 @@ STATICFILES_DIRS = []
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Cloudinary config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -74,7 +74,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     )
     foto = models.ImageField(
         _('Foto de Perfil'),
-        upload_to='usuarios/fotos/',
+        upload_to='perfil/fotos/',
         blank=True,
         null=True,
         help_text='Foto de perfil do usuário'

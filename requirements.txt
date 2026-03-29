@@ -75,3 +75,5 @@ django-extensions==3.2.3
 
 # Deployment
 gunicorn==21.2.0
+cloudinary==1.36.0
+django-cloudinary-storage==0.3.0

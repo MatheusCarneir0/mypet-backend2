@@ -59,7 +59,7 @@ class Pet(BaseModel):
     )
     foto = models.ImageField(
         _('Foto'),
-        upload_to='pets/%Y/%m/',
+        upload_to='pets/fotos/',
         blank=True,
         null=True
     )
