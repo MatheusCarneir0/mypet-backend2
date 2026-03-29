@@ -30,7 +30,7 @@ class PetSerializer(serializers.ModelSerializer):
         model = Pet
         fields = [
             'id', 'cliente', 'nome_cliente', 'nome', 'especie',
-            'especie_display', 'raca', 'idade', 'peso', 'porte',
+            'especie_display', 'raca', 'idade', 'data_nascimento', 'peso', 'porte',
             'porte_display', 'foto', 'observacoes', 'total_atendimentos',
             'ativo', 'data_criacao', 'data_atualizacao'
         ]
@@ -61,7 +61,7 @@ class PetListSerializer(serializers.ModelSerializer):
         model = Pet
         fields = [
             'id', 'cliente', 'nome', 'nome_cliente', 'especie_display',
-            'raca', 'idade', 'peso', 'porte_display', 'foto'
+            'raca', 'idade', 'data_nascimento', 'peso', 'porte_display', 'foto'
         ]
 
 
@@ -73,7 +73,7 @@ class PetCreateSerializer(serializers.ModelSerializer):
         model = Pet
         fields = [
             'id', 'cliente', 'nome', 'especie', 'raca',
-            'idade', 'peso', 'foto', 'observacoes'
+            'idade', 'data_nascimento', 'peso', 'foto', 'observacoes'
         ]
         read_only_fields = ['id']
         extra_kwargs = {
@@ -122,7 +122,7 @@ class PetUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
         fields = [
-            'nome', 'raca', 'idade', 'peso',
+            'nome', 'raca', 'idade', 'data_nascimento', 'peso',
             'foto', 'observacoes'
         ]
 
@@ -146,7 +146,7 @@ class PetDetailSerializer(serializers.ModelSerializer):
         model = Pet
         fields = [
             'id', 'cliente', 'nome', 'especie', 'especie_display',
-            'raca', 'idade', 'peso', 'porte', 'porte_display',
+            'raca', 'idade', 'data_nascimento', 'peso', 'porte', 'porte_display',
             'foto', 'observacoes', 'historico_recente',
             'total_atendimentos', 'ativo', 'data_criacao'
         ]

@@ -43,7 +43,15 @@ class Pet(BaseModel):
     raca = models.CharField(_('Raça'), max_length=100)
     idade = models.PositiveIntegerField(
         _('Idade'),
-        help_text='Idade em anos'
+        help_text='Idade em anos',
+        null=True,
+        blank=True
+    )
+    data_nascimento = models.DateField(
+        _('Data de Nascimento'),
+        null=True,
+        blank=True,
+        help_text='Data de nascimento do pet'
     )
     peso = models.DecimalField(
         _('Peso'),
