@@ -18,4 +18,4 @@ if created:
 else:
     print('Admin ja existe!')
 "
-exec gunicorn config.wsgi:application --bind 0.0.0.0:8000
+exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --timeout 120 --workers 1 --threads 2
