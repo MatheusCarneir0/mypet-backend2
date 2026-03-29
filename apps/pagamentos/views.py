@@ -25,6 +25,7 @@ from apps.swagger.pagamentos import (
     forma_pagamento_view_schema,
     transacao_pagamento_view_schema
 )
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 @forma_pagamento_view_schema

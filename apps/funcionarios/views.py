@@ -12,7 +12,8 @@ from .serializers import (
     HorarioTrabalhoSerializer,
 )
 from apps.core.permissions import IsAdministrador
-from apps.swagger.funcionarios import funcionario_view_schema
+from apps.swagger.funcionarios import funcionario_view_schema, horario_trabalho_view_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 @funcionario_view_schema
@@ -31,10 +32,9 @@ class FuncionarioViewSet(viewsets.ModelViewSet):
         return FuncionarioSerializer
 
 
-from drf_spectacular.utils import extend_schema
 
 
-@extend_schema(tags=["Funcionários"])
+@horario_trabalho_view_schema
 class HorarioTrabalhoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Horário de Trabalho dos Funcionários.

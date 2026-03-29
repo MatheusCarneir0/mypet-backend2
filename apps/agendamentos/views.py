@@ -26,10 +26,30 @@ from .serializers import (
 from .services import AgendamentoService
 from .filters import AgendamentoFilter
 from apps.swagger.agendamentos import agendamento_view_schema
-from apps.core.permissions import IsAdministrador, IsFuncionario, IsCliente, IsOwnerOrFuncionario, IsCargoMatchesService
+from apps.core.permissions import IsAdministrador, IsFuncionario, IsCliente, IsOwnerOrFuncionario, IsCargoMatchesService, IsOwnerOrAdmin
+from apps.swagger.agendamentos import (
+    list_agendamentos, retrieve_agendamento, create_agendamento,
+    update_agendamento, partial_update_agendamento, destroy_agendamento,
+    cancelar_agendamento, reagendar_agendamento,
+    iniciar_agendamento, concluir_agendamento,
+    horarios_disponiveis
+)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
-@agendamento_view_schema
+@extend_schema_view(
+    list=list_agendamentos,
+    retrieve=retrieve_agendamento,
+    create=create_agendamento,
+    update=update_agendamento,
+    partial_update=partial_update_agendamento,
+    destroy=destroy_agendamento,
+    cancelar=cancelar_agendamento,
+    iniciar=iniciar_agendamento,
+    concluir=concluir_agendamento,
+    reagendar=reagendar_agendamento,
+    disponibilidade=horarios_disponiveis,
+)
 class AgendamentoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Agendamento.

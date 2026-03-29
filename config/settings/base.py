@@ -260,6 +260,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@farmavet.com.
 
 # Frontend URL para links de reset de senha
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+BACKEND_URL = config('BACKEND_URL', default='http://localhost:8000')
 
 # PIX Configuration
 PIX_CHAVE = config('PIX_CHAVE', default='suachave@email.com')

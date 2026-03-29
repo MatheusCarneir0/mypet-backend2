@@ -27,6 +27,7 @@ from apps.swagger.authentication import (
     refresh_token,
     registro,
 )
+from drf_spectacular.utils import extend_schema
 
 
 @obter_token
@@ -64,6 +65,7 @@ class RegistroView(generics.CreateAPIView):
         return ClienteCreateSerializer
 
 
+@extend_schema(tags=["Autenticação"])
 class PasswordResetRequestView(APIView):
     """
     Solicita o envio de email para redefinição de senha.
@@ -97,6 +99,7 @@ class PasswordResetRequestView(APIView):
         )
 
 
+@extend_schema(tags=["Autenticação"])
 class PasswordResetConfirmView(APIView):
     """
     Confirma a redefinição de senha usando uid + token gerados no passo anterior.

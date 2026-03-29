@@ -16,12 +16,22 @@ from .serializers import (
     ClienteUpdateSerializer,
     ClienteDetailSerializer
 )
-from .services import ClienteService
-from apps.core.permissions import IsAdminOrSuperUser, IsOwnerOrAdmin
-from apps.swagger.clientes import cliente_view_schema
+from apps.core.permissions import IsAdminOrSuperUser, IsOwnerOrAdmin, IsFuncionario
+from apps.swagger.clientes import (
+    list_clientes, retrieve_cliente, create_cliente,
+    update_cliente, partial_update_cliente, destroy_cliente
+)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
-@cliente_view_schema
+@extend_schema_view(
+    list=list_clientes,
+    retrieve=retrieve_cliente,
+    create=create_cliente,
+    update=update_cliente,
+    partial_update=partial_update_cliente,
+    destroy=destroy_cliente,
+)
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Cliente.

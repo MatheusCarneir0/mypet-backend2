@@ -46,3 +46,40 @@ registro = extend_schema(
     }
 )
 
+# Usuário (Actions do UserViewSet)
+me = extend_schema(
+    tags=[TAG],
+    summary="Ver meu perfil",
+    description="Retorna os dados do usuário autenticado.",
+    responses={200: envelop(UsuarioSerializer)}
+)
+
+alterar_senha = extend_schema(
+    tags=[TAG],
+    summary="Alterar senha",
+    description="Altera a senha do usuário autenticado.",
+    request=AlterarSenhaSerializer,
+    responses={
+        200: {"description": "Senha alterada com sucesso"},
+        400: {"description": "Dados inválidos ou senha atual incorreta"}
+    }
+)
+
+upload_foto = extend_schema(
+    tags=[TAG],
+    summary="Upload de foto de perfil",
+    description="Faz o upload ou atualiza a foto de perfil do usuário.",
+    request=UploadFotoSerializer,
+    responses={
+        200: {"description": "Foto atualizada com sucesso"},
+        400: {"description": "Erro no upload"}
+    }
+)
+
+# Schema View para o UserViewSet (se necessário agrupar)
+usuario_view_schema = extend_schema_view(
+    me=me,
+    alterar_senha=alterar_senha,
+    upload_foto=upload_foto
+)
+

@@ -12,6 +12,7 @@ from .serializers import (
     HistoricoAtendimentoListSerializer
 )
 from apps.swagger.historico import historico_view_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 @historico_view_schema

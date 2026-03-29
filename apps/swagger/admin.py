@@ -9,6 +9,7 @@ from apps.relatorios.serializers import (
 from apps.pagamentos.serializers import FormaPagamentoSerializer
 
 TAG = "Administração"
+TAG_FINANCEIRO = "Financeiro"
 
 dashboard = extend_schema(
     tags=[TAG],
@@ -45,14 +46,14 @@ gerar_relatorio = extend_schema(
 
 # Formas de Pagamento (Admin CRUD)
 list_formas_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Listar formas de pagamento (Admin)",
     description="Lista todas as formas de pagamento. Apenas administradores.",
     responses={200: envelop(FormaPagamentoSerializer(many=True), paginated=True)}
 )
 
 retrieve_forma_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Obter forma de pagamento (Admin)",
     description="Retorna detalhes de uma forma de pagamento. Apenas administradores.",
     responses={
@@ -62,7 +63,7 @@ retrieve_forma_pagamento_admin = extend_schema(
 )
 
 create_forma_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Criar forma de pagamento (Admin)",
     description="Cria uma nova forma de pagamento. Apenas administradores.",
     request=FormaPagamentoSerializer,
@@ -73,7 +74,7 @@ create_forma_pagamento_admin = extend_schema(
 )
 
 update_forma_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Atualizar forma de pagamento (Admin)",
     description="Atualiza uma forma de pagamento. Apenas administradores.",
     request=FormaPagamentoSerializer,
@@ -85,7 +86,7 @@ update_forma_pagamento_admin = extend_schema(
 )
 
 partial_update_forma_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Atualizar parcialmente forma de pagamento (Admin)",
     description="Atualiza parcialmente uma forma de pagamento. Apenas administradores.",
     request=FormaPagamentoSerializer,
@@ -97,7 +98,7 @@ partial_update_forma_pagamento_admin = extend_schema(
 )
 
 destroy_forma_pagamento_admin = extend_schema(
-    tags=[TAG],
+    tags=[TAG_FINANCEIRO],
     summary="Excluir forma de pagamento (Admin)",
     description="Exclui (desativa) uma forma de pagamento. Apenas administradores.",
     responses={

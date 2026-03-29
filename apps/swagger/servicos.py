@@ -8,7 +8,7 @@ from apps.servicos.serializers import (
     ServicoCreateUpdateSerializer
 )
 
-TAG = "Agendamentos"  # Serviços estão relacionados a agendamentos
+TAG = "Serviços"
 
 # Listagem
 list_servicos = extend_schema(

@@ -95,6 +95,32 @@ historico_pet = extend_schema(
     }
 )
 
+choices_pet = extend_schema(
+    tags=[TAG],
+    summary="Opções de espécie e porte",
+    description="Retorna as opções válidas de espécie e porte para uso em formulários.",
+    responses={
+        200: envelop({
+            "type": "object",
+            "properties": {
+                "especies": {"type": "array", "items": {"type": "object"}},
+                "portes": {"type": "array", "items": {"type": "object"}}
+            }
+        })
+    }
+)
+
+upload_foto_pet = extend_schema(
+    tags=[TAG],
+    summary="Upload de foto do pet",
+    description="Faz upload de foto do pet. Aceita multipart/form-data com campo 'foto'.",
+    responses={
+        200: envelop({"type": "object", "properties": {"message": {"type": "string"}, "foto_url": {"type": "string"}}}),
+        400: {"description": "Dados inválidos"},
+        404: {"description": "Pet não encontrado"}
+    }
+)
+
 # Schema view para aplicar todos os decorators de uma vez
 pet_view_schema = extend_schema_view(
     list=list_pets,
@@ -104,5 +130,7 @@ pet_view_schema = extend_schema_view(
     partial_update=partial_update_pet,
     destroy=destroy_pet,
     historico=historico_pet,
+    choices=choices_pet,
+    upload_foto=upload_foto_pet,
 )
 

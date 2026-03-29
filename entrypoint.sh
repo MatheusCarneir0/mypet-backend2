@@ -1,6 +1,7 @@
 #!/bin/sh
 export DJANGO_SETTINGS_MODULE=config.settings.production
 python manage.py migrate
+python manage.py seed_pagamentos
 python manage.py shell -c "
 from apps.authentication.models import Usuario
 from django.contrib.auth.models import Group

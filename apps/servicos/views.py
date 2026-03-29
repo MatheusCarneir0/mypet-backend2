@@ -12,6 +12,7 @@ from .serializers import (
 )
 from apps.core.permissions import IsAdministrador
 from apps.swagger.servicos import servico_view_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 @servico_view_schema

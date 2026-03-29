@@ -105,6 +105,40 @@ concluir_agendamento = extend_schema(
     }
 )
 
+partial_update_agendamento = extend_schema(
+    tags=[TAG],
+    summary="Atualizar parcialmente agendamento",
+    description="Atualiza campos específicos de um agendamento.",
+    request=AgendamentoUpdateSerializer,
+    responses={
+        200: envelop(AgendamentoDetailSerializer),
+        400: {"description": "Dados inválidos"},
+        404: {"description": "Agendamento não encontrado"}
+    }
+)
+
+update_agendamento = extend_schema(
+    tags=[TAG],
+    summary="Atualizar agendamento (PUT)",
+    description="Atualiza todos os campos de um agendamento.",
+    request=AgendamentoUpdateSerializer,
+    responses={
+        200: envelop(AgendamentoDetailSerializer),
+        400: {"description": "Dados inválidos"},
+        404: {"description": "Agendamento não encontrado"}
+    }
+)
+
+destroy_agendamento = extend_schema(
+    tags=[TAG],
+    summary="Remover agendamento",
+    description="Remove (soft delete) um agendamento do sistema.",
+    responses={
+        204: {"description": "Agendamento removido com sucesso"},
+        404: {"description": "Agendamento não encontrado"}
+    }
+)
+
 horarios_disponiveis = extend_schema(
     tags=[TAG],
     summary="Consultar horários disponíveis",
@@ -129,8 +163,12 @@ agendamento_view_schema = extend_schema_view(
     list=list_agendamentos,
     retrieve=retrieve_agendamento,
     create=create_agendamento,
+    update=update_agendamento,
+    partial_update=partial_update_agendamento,
+    destroy=destroy_agendamento,
     cancelar=cancelar_agendamento,
     iniciar=iniciar_agendamento,
     concluir=concluir_agendamento,
+    reagendar=reagendar_agendamento,
     disponibilidade=horarios_disponiveis,
 )

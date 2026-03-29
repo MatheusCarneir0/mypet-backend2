@@ -7,6 +7,9 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
 from .models import Notificacao
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class NotificacaoService:
@@ -39,8 +42,9 @@ class NotificacaoService:
         try:
             from .tasks import enviar_email_async
             enviar_email_async.delay(notificacao.id)
-        except ImportError:
+        except Exception as e:
             # Se Celery não estiver disponível, enviar síncrono
+            logger.warning(f"Celery/Redis indisponível. Fallback síncrono. Erro: {e}")
             NotificacaoService._enviar_email_sincrono(notificacao)
         
         return notificacao
@@ -69,7 +73,8 @@ class NotificacaoService:
         try:
             from .tasks import enviar_email_async
             enviar_email_async.delay(notificacao.id)
-        except ImportError:
+        except Exception as e:
+            logger.warning(f"Celery/Redis indisponível. Fallback síncrono. Erro: {e}")
             NotificacaoService._enviar_email_sincrono(notificacao)
         
         return notificacao
@@ -97,7 +102,8 @@ class NotificacaoService:
         try:
             from .tasks import enviar_email_async
             enviar_email_async.delay(notificacao.id)
-        except ImportError:
+        except Exception as e:
+            logger.warning(f"Celery/Redis indisponível. Fallback síncrono. Erro: {e}")
             NotificacaoService._enviar_email_sincrono(notificacao)
         
         return notificacao
@@ -125,7 +131,8 @@ class NotificacaoService:
         try:
             from .tasks import enviar_email_async
             enviar_email_async.delay(notificacao.id)
-        except ImportError:
+        except Exception as e:
+            logger.warning(f"Celery/Redis indisponível. Fallback síncrono. Erro: {e}")
             NotificacaoService._enviar_email_sincrono(notificacao)
         
         return notificacao
@@ -153,7 +160,8 @@ class NotificacaoService:
         try:
             from .tasks import enviar_email_async
             enviar_email_async.delay(notificacao.id)
-        except ImportError:
+        except Exception as e:
+            logger.warning(f"Celery/Redis indisponível. Fallback síncrono. Erro: {e}")
             NotificacaoService._enviar_email_sincrono(notificacao)
         
         return notificacao

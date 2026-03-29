@@ -18,10 +18,25 @@ from .serializers import (
     PetDetailSerializer
 )
 from apps.core.permissions import IsOwnerOrAdmin, IsFuncionario
-from apps.swagger.pets import pet_view_schema
+from apps.swagger.pets import (
+    list_pets, retrieve_pet, create_pet, update_pet,
+    partial_update_pet, destroy_pet, historico_pet,
+    choices_pet, upload_foto_pet
+)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
-@pet_view_schema
+@extend_schema_view(
+    list=list_pets,
+    retrieve=retrieve_pet,
+    create=create_pet,
+    update=update_pet,
+    partial_update=partial_update_pet,
+    destroy=destroy_pet,
+    historico=historico_pet,
+    choices=choices_pet,
+    upload_foto=upload_foto_pet,
+)
 class PetViewSet(viewsets.ModelViewSet):
     """
     ViewSet para operações de Pet.

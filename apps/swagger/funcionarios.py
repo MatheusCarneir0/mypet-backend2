@@ -6,7 +6,8 @@ from apps.funcionarios.serializers import (
     FuncionarioSerializer,
     FuncionarioListSerializer,
     FuncionarioCreateSerializer,
-    FuncionarioUpdateSerializer
+    FuncionarioUpdateSerializer,
+    HorarioTrabalhoSerializer,
 )
 
 TAG = "Funcionários"
@@ -91,5 +92,60 @@ funcionario_view_schema = extend_schema_view(
     update=update_funcionario,
     partial_update=partial_update_funcionario,
     destroy=destroy_funcionario,
+)
+
+# Horário de Trabalho
+list_horarios = extend_schema(
+    tags=[TAG],
+    summary="Listar horários de trabalho",
+    description="Retorna a lista de horários de trabalho dos funcionários.",
+    responses={200: envelop(HorarioTrabalhoSerializer(many=True), paginated=True)}
+)
+
+retrieve_horario = extend_schema(
+    tags=[TAG],
+    summary="Obter detalhes de um horário",
+    description="Retorna os detalhes de um horário de trabalho específico.",
+    responses={200: envelop(HorarioTrabalhoSerializer)}
+)
+
+create_horario = extend_schema(
+    tags=[TAG],
+    summary="Criar novo horário",
+    description="Cria um novo horário de trabalho para um funcionário.",
+    request=HorarioTrabalhoSerializer,
+    responses={201: envelop(HorarioTrabalhoSerializer)}
+)
+
+update_horario = extend_schema(
+    tags=[TAG],
+    summary="Atualizar horário",
+    description="Atualiza um horário de trabalho existente.",
+    request=HorarioTrabalhoSerializer,
+    responses={200: envelop(HorarioTrabalhoSerializer)}
+)
+
+partial_update_horario = extend_schema(
+    tags=[TAG],
+    summary="Atualizar parcialmente um horário",
+    description="Atualiza parcialmente um horário de trabalho.",
+    request=HorarioTrabalhoSerializer,
+    responses={200: envelop(HorarioTrabalhoSerializer)}
+)
+
+destroy_horario = extend_schema(
+    tags=[TAG],
+    summary="Excluir horário",
+    description="Remove um horário de trabalho.",
+    responses={204: {"description": "Horário excluído com sucesso"}}
+)
+
+horario_trabalho_view_schema = extend_schema_view(
+    list=list_horarios,
+    retrieve=retrieve_horario,
+    create=create_horario,
+    update=update_horario,
+    partial_update=partial_update_horario,
+    destroy=destroy_horario,
 )
 

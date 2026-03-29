@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Notificacao
 from .serializers import NotificacaoSerializer, NotificacaoListSerializer, NotificacaoAdminSerializer
 from apps.swagger.notificacoes import notificacao_view_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 @notificacao_view_schema
