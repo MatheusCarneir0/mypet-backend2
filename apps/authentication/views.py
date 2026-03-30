@@ -93,8 +93,11 @@ class PasswordResetRequestView(APIView):
             from apps.notificacoes.services import NotificacaoService
             try:
                 NotificacaoService.enviar_recuperacao_senha(usuario, reset_link)
+                print(f"EMAIL ENVIADO COM SUCESSO para {usuario.email}")
             except Exception as e:
-                logger.error(f"ERRO ao enviar email de recuperação: {e}", exc_info=True)
+                import traceback
+                print(f"ERRO AO ENVIAR EMAIL: {e}")
+                print(traceback.format_exc())
         except Usuario.DoesNotExist:
             pass  # Silencia para não vazar e-mails cadastrados
 
