@@ -92,6 +92,11 @@ class PasswordResetRequestView(APIView):
             # Enviar e-mail via service
             from apps.notificacoes.services import NotificacaoService
             try:
+                from django.conf import settings
+                print(f"EMAIL_BACKEND EM USO: {settings.EMAIL_BACKEND}")
+                print(f"EMAIL_HOST: {settings.EMAIL_HOST}")
+                print(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
+                print(f"EMAIL_PORT: {settings.EMAIL_PORT}")
                 NotificacaoService.enviar_recuperacao_senha(usuario, reset_link)
                 print(f"EMAIL ENVIADO COM SUCESSO para {usuario.email}")
             except Exception as e:
