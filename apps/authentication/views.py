@@ -92,7 +92,6 @@ class PasswordResetRequestView(APIView):
             # Enviar e-mail via service
             from apps.notificacoes.services import NotificacaoService
             try:
-                from django.conf import settings
                 print(f"EMAIL_BACKEND EM USO: {settings.EMAIL_BACKEND}")
                 print(f"EMAIL_HOST: {settings.EMAIL_HOST}")
                 print(f"EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
